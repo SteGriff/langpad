@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <title>hocpad</title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="tachyons.css" />
+  <style>
+    .minw3 { min-width:4rem; }
+    .minw4 { min-width:8rem; }
+    .minw5 { min-width:16rem; }
+    .bw1-hover:hover, .bw1-hover:active { border-width:.125rem }
+    .foreign { font-family: 'Garamond', Cambria, Cochin, Georgia, serif; font-weight: bold;}
+    .local { font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif }
+    input { border: 1px solid transparent; border-radius: 4px; box-sizing: border-box; }
+    input:hover, input:active { border: 1px solid gray; }
+  </style>
+</head>
+
+<body class="sans-serif">
+  <main v-scope @vue:mounted="mounted" class="mw-100 overflow-hidden">
+    <header>
+      <div class="bg-black-90 dt pa3 w-100 center white">
+        <h1 class="dtc white f5 b">
+          hocpad
+        </h1>
+        <p class="dn dtc-ns white f6 pl1 ">
+          Your personal language-learning glossary
+        </p>
+        <p class="dtc f6">
+          <button
+            class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
+            @click="copyAll()"
+          >
+            {{ copied ? "✔" : "📋" }} Copy
+          </button>
+        </p>
+        <p class="dtc f6">
+          <button
+            class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
+            @click="dialog = 'VOCAB'"
+          >
+            Vocab
+          </button>
+        </p>
+        <p class="dtc f6">
+          <button
+            class="ba bw1 b--white bg-gold w-90 black tc b pointer grow pa1 mh2"
+            @click="reset()"
+          >
+            {{ resetBtnTexts[resetClicks] }}
+          </button>
+        </p>
+      </div>
+    </header>
+
+    <div class="ma3">
+
+      <div v-for="el in elements">
+
+        <div v-if="el.elementType === elementFactory.h1" class="mv2 flex justify-center">
+          <input 
+            class="pa2 f3 mh1 mh2-ns w-40 minw4 local tc" 
+            v-model="el.words[0].local"
+            placeholder="Heading"
+            @focus="select(el)"
+            @blur="save()"
+            >
+        </div>
+
+        <div v-if="el.elementType === elementFactory.gloss" class="mv2 flex justify-center">
+          <input
+            class="pa2 f4 mh1 mh2-ns w-40 minw4 foreign tr"
+            v-model="el.words[0].foreign"
+            placeholder="A word to learn"
+            @focus="select(el)"
+            @blur="save()"
+            >
+          <input
+            class="pa2 f4 mh1 mh2-ns w-40 minw4 local tl"
+            v-model="el.words[0].local"
+            placeholder="Meaning/gloss"
+            @focus="select(el)"
+            @blur="save()"
+            >
+        </div>
+
+        <div v-if="el.elementType === elementFactory.ab" class="mv2">
+          
+          <div class="flex flex-wrap justify-center items-center">
+            <div v-for="word in el.words" class="ba mv2 mh1 mh2-ns w-25 minw4">
+              <input
+                class="db pa2 f4 foreign w-100 tc"
+                v-model="word.foreign"
+                placeholder="Vocab"
+                @focus="select(el, word)"
+                @blur="save()"
+                >
+              <input
+                class="db pa2 f5 local w-100 tc"
+                v-model="word.local"
+                placeholder="Gloss"
+                @focus="select(el, word)"
+                @blur="save()"
+                >
+            </div>
+          </div>
+          <div class="flex flex-wrap justify-center items-center">
+            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--black bw1 br2 bg-white black" @click="addWord(el)">+</button>
+            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--black bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
+            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
+          </div>
+          
+        </div>
+
+      </div>
+
+      <div class="flex flex-wrap justify-center mt4">
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.h1)">Add Heading 📰</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.gloss)">Add Gloss 📔</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.ab)">Add A/B 🆎</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.mnem)">Add Mnemonic 🦜</button>
+      </div>
+      
+    </div>
+
+    <div class="ba ma3" v-if="dialog === 'VOCAB'">
+      <button type="button" @click="dialog = null">Close</button>
+      <ul>
+        <li v-for="v in allVocab()">{{v.local}} &ndash; {{v.foreign}}</li>
+      </ul>
+    </div>
+    <p> {{ selected }} </p>
+  </main>
+
+  <script src="petite-vue.js"></script>
+  <script src="cuid.js"></script>
+  <script src="elements.js"></script>
+  <script>
+    const CONTENT = "savedElements";
+    const elementFactory = new ElementFactory();
+    PetiteVue.createApp({
+      message: "Welcome",
+      dialog: null,
+      copied: null,
+      resetClicks: 0,
+      resetBtnTexts: ["New", "Sure?", "Pew!"],
+      elements: elementFactory.initElements(),
+      selected: null,
+      selectedWord: null,
+      mounted() {
+        console.log("mounted");
+        // Load any complex objects from LS
+        const json = window.localStorage.getItem(CONTENT);
+        if (json) {
+          const saved = JSON.parse(json);
+          if (saved && Array.isArray(saved)) {
+            this.elements = saved;
+          }
+        }
+      },
+      // Computed
+      maxOrder() {
+        const max = Math.max(...this.elements.map(e => e.order));
+        console.log("maxOrder", max);
+        return max;
+      },
+      orderedElements() {
+        let ordered = [...this.elements];
+        ordered.sort((a,b) => a.order > b.order);
+        return ordered;
+      },
+      allVocab() {
+        let ordered = [...this.elements];
+        ordered.sort((a,b) => a.local > b.local);
+        return ordered;
+      },
+      isSel(element) {
+        return element.id === this.selected;
+      },
+      // Methods
+      select(element, word) {
+        console.log("select", element.id, word?.id);
+        this.selected = element.id;
+        if (word) this.selectedWord = word.id;
+      },
+      add(order, elementType) {
+        console.log(elementFactory.gloss)
+        const newEl = elementFactory.createElement(elementType || elementFactory.gloss, order);
+        this.elements.push(newEl);
+        this.save();
+      },
+      addWord(element) {
+        element.words.push(elementFactory.createWord());
+        this.save();
+      },
+      removeWord(element, wordId) {
+        const removeIndex = element.words.findIndex(w => w.id === wordId);
+        console.log("removeWord removeIndex", removeIndex, element.words)
+        element.words.splice(removeIndex, 1);
+        this.save();
+      },
+      reset() {
+        var vm = this;
+        this.resetClicks++;
+        if (this.resetClicks === 2) {
+          this.elements = elementFactory.initElements();
+          this.save();
+          setTimeout(function() {
+            vm.resetClicks = 0;
+          }, 1000);
+        }
+        if (this.resetClicks > 2) this.resetClicks = 0;
+      },
+      save() {
+        console.log("Save");
+        this.resetClicks = 0;
+        // Persist any complex objects to LS
+        const json = JSON.stringify(this.elements);
+        window.localStorage.setItem(CONTENT, json);
+      },
+      copy(link) {
+        try {
+          navigator.clipboard.writeText(link);
+          this.copied = link;
+          window.setTimeout(() => this.copied = null, 1000);
+        } catch (e) { }
+      },
+      copyAll() {
+        try {
+          const allLinesContent = "TODO";
+          navigator.clipboard.writeText(allLinesContent);
+          this.copied = true;
+          window.setTimeout(() => (this.copied = null), 1000);
+        } catch (e) {}
+      },
+    }).mount()
+  </script>
+</body>
+
+</html>
