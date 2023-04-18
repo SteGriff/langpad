@@ -57,38 +57,53 @@
     </header>
 
     <div class="ma3">
-
       <div v-for="el in elements">
 
-        <div v-if="el.elementType === elementFactory.h1" class="mv2 flex justify-center">
-          <input 
-            class="pa2 f3 mh1 mh2-ns w-40 minw4 local tc" 
-            v-model="el.words[0].local"
-            placeholder="Heading"
-            @focus="select(el)"
-            @blur="save()"
-            >
+        <!-- Heading Element -->
+        <div v-if="el.elementType === elementFactory.h1" class="mv2">
+          <div class="flex justify-center">
+            <input 
+              class="pa2 f3 mh1 mh2-ns w-40 minw4 local tc" 
+              v-model="el.words[0].local"
+              placeholder="Heading"
+              @focus="select(el)"
+              @blur="save()"
+              >
+          </div>
+          <div class="flex flex-wrap justify-center items-center">
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveUp(el)">&uparrow;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
+          </div>
         </div>
 
-        <div v-if="el.elementType === elementFactory.gloss" class="mv2 flex justify-center">
-          <input
-            class="pa2 f4 mh1 mh2-ns w-40 minw4 foreign tr"
-            v-model="el.words[0].foreign"
-            placeholder="A word to learn"
-            @focus="select(el)"
-            @blur="save()"
-            >
-          <input
-            class="pa2 f4 mh1 mh2-ns w-40 minw4 local tl"
-            v-model="el.words[0].local"
-            placeholder="Meaning/gloss"
-            @focus="select(el)"
-            @blur="save()"
-            >
+        <!-- Gloss Element -->
+        <div v-if="el.elementType === elementFactory.gloss" class="mv2">
+          <div class="flex justify-center">
+            <input
+              class="pa2 f4 mh1 mh2-ns w-40 minw4 foreign tr"
+              v-model="el.words[0].foreign"
+              placeholder="A word to learn"
+              @focus="select(el)"
+              @blur="save()"
+              >
+            <input
+              class="pa2 f4 mh1 mh2-ns w-40 minw4 local tl"
+              v-model="el.words[0].local"
+              placeholder="Meaning/gloss"
+              @focus="select(el)"
+              @blur="save()"
+              >
+          </div>
+          <div class="flex flex-wrap justify-center items-center">
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveUp(el)">&uparrow;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
+          </div>
         </div>
 
+        <!-- A/B Element -->
         <div v-if="el.elementType === elementFactory.ab" class="mv2">
-          
           <div class="flex flex-wrap justify-center items-center">
             <div v-for="word in el.words" class="ba mv2 mh1 mh2-ns w-25 minw4">
               <input
@@ -108,20 +123,19 @@
             </div>
           </div>
           <div class="flex flex-wrap justify-center items-center">
-            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--black bw1 br2 bg-white black" @click="addWord(el)">+</button>
-            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--black bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
-            <button type="button" v-if="isSel(el)" class="pointer w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="addWord(el)">+</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
+            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
           </div>
-          
         </div>
 
       </div>
 
       <div class="flex flex-wrap justify-center mt4">
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.h1)">Add Heading 📰</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.gloss)">Add Gloss 📔</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.ab)">Add A/B 🆎</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(maxOrder, elementFactory.mnem)">Add Mnemonic 🦜</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.h1)">Add Heading 📰</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.gloss)">Add Gloss 📔</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.ab)">Add A/B 🆎</button>
+        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.mnem)">Add Mnemonic 🦜</button>
       </div>
       
     </div>
@@ -132,7 +146,7 @@
         <li v-for="v in allVocab()">{{v.local}} &ndash; {{v.foreign}}</li>
       </ul>
     </div>
-    <p> {{ selected }} </p>
+    
   </main>
 
   <script src="petite-vue.js"></script>
@@ -160,40 +174,49 @@
             this.elements = saved;
           }
         }
+
       },
       // Computed
-      maxOrder() {
-        const max = Math.max(...this.elements.map(e => e.order));
-        console.log("maxOrder", max);
-        return max;
-      },
-      orderedElements() {
-        let ordered = [...this.elements];
-        ordered.sort((a,b) => a.order > b.order);
-        return ordered;
+      nextOrdinal() {
+        const max = Math.max(...this.elements.map(e => e.order)) || 0;
+        console.log("nextOrdinal", max + 1);
+        return max + 1;
       },
       allVocab() {
-        let ordered = [...this.elements];
-        ordered.sort((a,b) => a.local > b.local);
-        return ordered;
+        const allWords = [...this.elements].flatMap(e => e.words);
+        allWords.sort((a,b) => a.local > b.local);
+        return allWords;
       },
       isSel(element) {
         return element.id === this.selected;
       },
+      ordinals() {
+        const ords = this.elements.map(e => e.order).sort();
+        console.log("ords", ords);
+        return ords;
+      },
       // Methods
       select(element, word) {
-        console.log("select", element.id, word?.id);
+        console.log("select", element.id, word?.id, element.order);
         this.selected = element.id;
         if (word) this.selectedWord = word.id;
       },
       add(order, elementType) {
-        console.log(elementFactory.gloss)
         const newEl = elementFactory.createElement(elementType || elementFactory.gloss, order);
         this.elements.push(newEl);
+        console.log("add", order, elementType);
+        this.save();
+      },
+      remove(element) {
+        const removeIndex = this.elements.findIndex(e => e.id === element.id);
+        console.log("remove removeIndex", removeIndex, this.elements)
+        this.elements.splice(removeIndex, 1);
         this.save();
       },
       addWord(element) {
-        element.words.push(elementFactory.createWord());
+        const newWord = elementFactory.createWord();
+        element.words.push(newWord);
+        this.select(element, newWord);
         this.save();
       },
       removeWord(element, wordId) {
@@ -201,6 +224,16 @@
         console.log("removeWord removeIndex", removeIndex, element.words)
         element.words.splice(removeIndex, 1);
         this.save();
+      },
+      moveUp(element) {
+        element.order -= 1;
+        this.elements.sort((a,b) => a.order > b.order);
+        console.log(element);
+      },
+      moveDown(element) {
+        element.order += 1;
+        this.elements.sort((a,b) => a.order > b.order);
+        console.log(element);
       },
       reset() {
         var vm = this;
