@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-  <title>hocpad</title>
+  <title>langpad</title>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -25,7 +25,7 @@
     <header>
       <div class="bg-black-90 dt pa3 w-100 center white">
         <h1 class="dtc white f5 b">
-          hocpad
+          langpad
         </h1>
         <p class="dn dtc-ns white f6 pl1 ">
           Your personal language-learning glossary
@@ -113,14 +113,51 @@
                 >
             </div>
           </div>
-
         </div>
 
+        <!-- Usage Element -->
+        <div v-if="el.elementType === elementFactory.usage">
+          <div>
+            <input
+              class="pa2 f4 mh1 mh2-ns w-100 minw4 foreign tc"
+              v-model="el.words[0].phrase"
+              placeholder="An example sentence"
+              @focus="select(el)"
+              @blur="blur()"
+              >
+          </div>
+          <div>
+            <input
+              class="pa2 f5 mh1 mh2-ns w-100 minw4 local tc"
+              v-model="el.words[0].local"
+              placeholder="Meaning"
+              @focus="select(el)"
+              @blur="blur()"
+              >
+          </div>
+        </div>
+
+        <!-- Mnemonic Element -->
+        <div v-if="el.elementType === elementFactory.mnem">
+          <div>
+            <input
+              class="pa2 f4 mh1 mh2-ns w-100 minw4 foreign tc"
+              v-model="el.words[0].phrase"
+              placeholder="A helpful mnemonic"
+              @focus="select(el)"
+              @blur="blur()"
+              >
+          </div>
+        </div>
+
+        <!-- Buttons -->
         <div class="flex flex-wrap justify-center items-center" v-if="isSel(el)">
+          <span class="f5 mh2">{{el.order}}</span>
           <button
             type="button"
             class="pointer pa0 tc w2 h2 ma1 mr3 b--black bw1 br2 bg-white black"
-            @click="toggleTools(el)">📚 {{el.order}}</button>
+            v-if="el.order !== maxOrdinal()"
+            @click="toggleTools(el)">📚</button>
   
           <button type="button" v-if="el.elementType === elementFactory.ab" class="pointer pa0 tc w2 h2 ma1 b--green bw1 br2 bg-white black" @click="addWord(el)">+</button>
           <button type="button" v-if="el.elementType === elementFactory.ab" class="pointer pa0 tc w2 h2 ma1 mr3 b--blue bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
@@ -130,20 +167,24 @@
           <button type="button" class="pointer pa0 tc w2 h2 ma1 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
         </div>
 
-        <div class="flex flex-wrap justify-center mt1" v-if="(isSel(el) && addPoint === el.order) || (el.order === maxOrdinal() && addPoint === nextOrdinal())">
-          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.h1)">Heading 📰</button>
-          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.gloss)">Gloss 📔</button>
-          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.ab)">A/B 🆎</button>
-          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.mnem)">Mnemonic 🧠</button>
-          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.usage)">Usage 🦜</button>
+        <!-- New Element Tools -->
+        <div 
+          class="flex flex-wrap justify-center mt1" 
+          :class="{'mt1' : addToolLocation === 'ELEMENT', 'mt4' : addToolLocation === 'END'}" 
+          v-if="showTools(el)">
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(elementFactory.h1)">Heading 📰</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(elementFactory.gloss)">Gloss 📔</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(elementFactory.ab)">A/B 🆎</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(elementFactory.mnem)">Mnemonic 🧠</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(elementFactory.usage)">Usage 🦜</button>
         </div>
       </div>
 
-      <div class="flex justify-center mt4" v-if="addPoint !== nextOrdinal()">
+      <div class="flex justify-center mt4" v-if="addToolLocation !== 'END'">
         <button
           type="button"
           class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4"
-          @click="addPoint = nextOrdinal()">Add 📚</button>
+          @click="toggleTools()">Add 📚</button>
       </div>
     </div>
 
@@ -172,7 +213,7 @@
       selected: null,
       selectedWord: null,
       addPoint: 0,
-      addToolsOpen: null,
+      addToolLocation: null,
       mounted() {
         console.log("mounted");
         // Load any complex objects from LS
@@ -199,12 +240,17 @@
         return this.elements.sort((a, b) => a.order - b.order);
       },
       allVocab() {
-        const allWords = [...this.elements].flatMap(e => e.words);
-        allWords.sort((a, b) => a.localeCompare(b));
+        const allWords = [...this.elements].flatMap(e => e.words).filter(e => e.foreign > "");
+        allWords.sort((a, b) => a.local.localeCompare(b.local));
         return allWords;
       },
       isSel(element) {
         return element.id === this.selected;
+      },
+      showTools(element) {
+        const isOpenOnElement = (this.addToolLocation === 'ELEMENT' && this.isSel(element) && this.addPoint === element.order);
+        const isOpenAtEnd = (this.addToolLocation === 'END' && element.order === this.maxOrdinal());
+        return isOpenOnElement || isOpenAtEnd;
       },
       // Methods
       select(element, word) {
@@ -213,11 +259,18 @@
         if (word) this.selectedWord = word.id;
       },
       toggleTools(element) {
-        this.addPoint = this.addPoint === element.order
-          ? this.nextOrdinal()
-          : element.order;
+        const toolLocationTarget = element ? 'ELEMENT' : 'END';
+        this.addPoint = element?.order || this.nextOrdinal();
+        this.addToolLocation = this.addToolLocation === toolLocationTarget 
+          ? null 
+          : toolLocationTarget;
+        console.log("toggleTools", this.addToolLocation, this.addPoint)
       },
-      add(order, elementType) {
+      add(elementType) {
+        const order = this.addToolLocation === 'END' 
+          ? this.maxOrdinal()
+          : this.addPoint;
+
         // Shunt down existing elements
         const newOrdinal = order + 1;
         this.elements.filter(e => e.order >= newOrdinal).forEach(e => e.order += 1);
@@ -232,6 +285,10 @@
         const removeIndex = this.elements.findIndex(e => e.id === element.id);
         console.log("remove removeIndex", removeIndex, this.elements)
         this.elements.splice(removeIndex, 1);
+        // Renumber elements to remove ordinal gaps
+        this.elements.sort((a, b) => a.order - b.order).forEach((el, index) => {
+          el.order = index;
+        });
         this.save();
       },
       addWord(element) {

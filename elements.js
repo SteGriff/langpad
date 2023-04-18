@@ -11,7 +11,7 @@ var ElementFactory = function () {
             "elementType": elementType,
             "order": order,
             "alignment": 0,
-            "words": [this.createWord()]
+            "words": [this.createWord(local, foreign)]
         }
         console.log("createElement", el);
         return el;
@@ -21,11 +21,15 @@ var ElementFactory = function () {
         return {
             "id" : cuid(),
             "local": local || "",
-            "foreign": foreign || ""
+            "foreign": foreign || "",
+            "phrase" : "",
         }
     }
 
     this.initElements = function () {
-        return [this.createElement(this.gloss, 0, "Hello", "Hola")]
+        return [
+            this.createElement(this.h1, 0, "Greetings"),
+            this.createElement(this.gloss, 1, "Hello", "Hola")
+        ]
     }
 }
