@@ -346,7 +346,7 @@
       },
       copyAll() {
         try {
-          const allLinesContent = "TODO";
+          const allLinesContent = this.elements.map(e => elementFactory.elementString(e)).join('\r\n');
           navigator.clipboard.writeText(allLinesContent);
           this.copied = true;
           window.setTimeout(() => (this.copied = null), 1000);

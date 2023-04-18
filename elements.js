@@ -32,4 +32,24 @@ var ElementFactory = function () {
             this.createElement(this.gloss, 1, "Hello", "Hola")
         ]
     }
+
+    this.elementString = function(element) {
+        return element.words
+            .flatMap(w => this.wordString(w))
+            .join('\r\n');
+    }
+
+    this.wordString = function(word) {
+        const def = word.local 
+            ? ` - ${word.local}`
+            : '';
+
+        if (word.phrase)
+            return `${word.phrase}${def}`;
+
+        if (word.foreign)
+            return `${word.foreign}${def}`;
+
+        return word.local;
+    }
 }
