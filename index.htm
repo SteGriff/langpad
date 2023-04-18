@@ -190,8 +190,15 @@
 
     <div class="ba ma3" v-if="dialog === 'VOCAB'">
       <button type="button" @click="dialog = null">Close</button>
+      <label>Sort Local <input v-model="sortLocal" type="checkbox"></label>
       <ul>
-        <li v-for="v in allVocab()">{{v.local}} &ndash; {{v.foreign}}</li>
+        <li v-for="v in allVocab()">
+          <span v-if="sortLocal">{{v.local}} &ndash; {{v.foreign}}</span>
+          <span v-else>{{v.foreign}} &ndash; {{v.local}}</span>
+          <ul v-if="v.usages">
+            <li v-for="use in v.usages">{{ use.phrase }}</li>
+          </ul>
+        </li>
       </ul>
     </div>
     
@@ -214,6 +221,7 @@
       selectedWord: null,
       addPoint: 0,
       addToolLocation: null,
+      sortLocal: false,
       mounted() {
         console.log("mounted");
         // Load any complex objects from LS
@@ -240,8 +248,15 @@
         return this.elements.sort((a, b) => a.order - b.order);
       },
       allVocab() {
-        const allWords = [...this.elements].flatMap(e => e.words).filter(e => e.foreign > "");
-        allWords.sort((a, b) => a.local.localeCompare(b.local));
+        const all = [...this.elements].flatMap(e => e.words)
+        const allWords = all.filter(e => e.foreign > "");
+        const allUsages = all.filter(e => e.phrase > "");
+        if (this.sortLocal) allWords.sort((a, b) => a.local.localeCompare(b.local));
+        else allWords.sort((a, b) => a.foreign.localeCompare(b.foreign))
+
+        allWords.forEach((w) => {
+          w.usages = allUsages.filter(u => u.phrase.search(new RegExp(w.foreign, "i")) !== -1);
+        })
         return allWords;
       },
       isSel(element) {
