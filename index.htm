@@ -16,6 +16,7 @@
     .local { font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif }
     input { border: 1px solid transparent; border-radius: 4px; box-sizing: border-box; }
     input:hover, input:active { border: 1px solid gray; }
+    button { border-style: solid; }
   </style>
 </head>
 
@@ -57,87 +58,93 @@
     </header>
 
     <div class="ma3">
-      <div v-for="el in elements">
+      <div v-for="el in orderedElements()" class="mv2">
 
         <!-- Heading Element -->
-        <div v-if="el.elementType === elementFactory.h1" class="mv2">
+        <div v-if="el.elementType === elementFactory.h1">
           <div class="flex justify-center">
             <input 
               class="pa2 f3 mh1 mh2-ns w-40 minw4 local tc" 
               v-model="el.words[0].local"
               placeholder="Heading"
               @focus="select(el)"
-              @blur="save()"
+              @blur="blur()"
               >
-          </div>
-          <div class="flex flex-wrap justify-center items-center">
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveUp(el)">&uparrow;</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
           </div>
         </div>
 
         <!-- Gloss Element -->
-        <div v-if="el.elementType === elementFactory.gloss" class="mv2">
+        <div v-if="el.elementType === elementFactory.gloss">
           <div class="flex justify-center">
             <input
               class="pa2 f4 mh1 mh2-ns w-40 minw4 foreign tr"
               v-model="el.words[0].foreign"
               placeholder="A word to learn"
               @focus="select(el)"
-              @blur="save()"
+              @blur="blur()"
               >
             <input
               class="pa2 f4 mh1 mh2-ns w-40 minw4 local tl"
               v-model="el.words[0].local"
               placeholder="Meaning/gloss"
               @focus="select(el)"
-              @blur="save()"
+              @blur="blur()"
               >
-          </div>
-          <div class="flex flex-wrap justify-center items-center">
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveUp(el)">&uparrow;</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
           </div>
         </div>
 
         <!-- A/B Element -->
-        <div v-if="el.elementType === elementFactory.ab" class="mv2">
+        <div v-if="el.elementType === elementFactory.ab">
           <div class="flex flex-wrap justify-center items-center">
-            <div v-for="word in el.words" class="ba mv2 mh1 mh2-ns w-25 minw4">
+            <div v-for="word in el.words" class="ba b--light-gray br1 mv2 mh1 mh2-ns w-25 minw4">
               <input
                 class="db pa2 f4 foreign w-100 tc"
                 v-model="word.foreign"
                 placeholder="Vocab"
                 @focus="select(el, word)"
-                @blur="save()"
+                @blur="blur()"
                 >
               <input
                 class="db pa2 f5 local w-100 tc"
                 v-model="word.local"
                 placeholder="Gloss"
                 @focus="select(el, word)"
-                @blur="save()"
+                @blur="blur()"
                 >
             </div>
           </div>
-          <div class="flex flex-wrap justify-center items-center">
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="addWord(el)">+</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--black bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
-            <button type="button" v-if="isSel(el)" class="pointer pa0 tc w2 h2 ma2 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
-          </div>
+
         </div>
 
+        <div class="flex flex-wrap justify-center items-center" v-if="isSel(el)">
+          <button
+            type="button"
+            class="pointer pa0 tc w2 h2 ma1 mr3 b--black bw1 br2 bg-white black"
+            @click="toggleTools(el)">📚 {{el.order}}</button>
+  
+          <button type="button" v-if="el.elementType === elementFactory.ab" class="pointer pa0 tc w2 h2 ma1 b--green bw1 br2 bg-white black" @click="addWord(el)">+</button>
+          <button type="button" v-if="el.elementType === elementFactory.ab" class="pointer pa0 tc w2 h2 ma1 mr3 b--blue bw1 br2 bg-white black" @click="removeWord(el, selectedWord)">&minus;</button>
+          
+          <button type="button" class="pointer pa0 tc w2 h2 ma1 b--black bw1 br2 bg-white black" @click="moveUp(el)">&uparrow;</button>
+          <button type="button" class="pointer pa0 tc w2 h2 ma1 b--red bw1 br2 bg-white red" @click="remove(el)">&times;</button>
+          <button type="button" class="pointer pa0 tc w2 h2 ma1 b--black bw1 br2 bg-white black" @click="moveDown(el)">&downarrow;</button>
+        </div>
+
+        <div class="flex flex-wrap justify-center mt1" v-if="(isSel(el) && addPoint === el.order) || (el.order === maxOrdinal() && addPoint === nextOrdinal())">
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.h1)">Heading 📰</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.gloss)">Gloss 📔</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.ab)">A/B 🆎</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.mnem)">Mnemonic 🧠</button>
+          <button type="button" class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4" @click="add(addPoint, elementFactory.usage)">Usage 🦜</button>
+        </div>
       </div>
 
-      <div class="flex flex-wrap justify-center mt4">
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.h1)">Add Heading 📰</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.gloss)">Add Gloss 📔</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.ab)">Add A/B 🆎</button>
-        <button type="button" class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4" @click="add(nextOrdinal(), elementFactory.mnem)">Add Mnemonic 🦜</button>
+      <div class="flex justify-center mt4" v-if="addPoint !== nextOrdinal()">
+        <button
+          type="button"
+          class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4"
+          @click="addPoint = nextOrdinal()">Add 📚</button>
       </div>
-      
     </div>
 
     <div class="ba ma3" v-if="dialog === 'VOCAB'">
@@ -164,6 +171,8 @@
       elements: elementFactory.initElements(),
       selected: null,
       selectedWord: null,
+      addPoint: 0,
+      addToolsOpen: null,
       mounted() {
         console.log("mounted");
         // Load any complex objects from LS
@@ -174,26 +183,28 @@
             this.elements = saved;
           }
         }
-
+        this.addPoint = this.nextOrdinal();
       },
       // Computed
+      maxOrdinal() {
+        const max = Math.max(...this.elements.map(e => e.order)) || 0;
+        return max;
+      },
       nextOrdinal() {
         const max = Math.max(...this.elements.map(e => e.order)) || 0;
         console.log("nextOrdinal", max + 1);
         return max + 1;
       },
+      orderedElements() {
+        return this.elements.sort((a, b) => a.order - b.order);
+      },
       allVocab() {
         const allWords = [...this.elements].flatMap(e => e.words);
-        allWords.sort((a,b) => a.local > b.local);
+        allWords.sort((a, b) => a.localeCompare(b));
         return allWords;
       },
       isSel(element) {
         return element.id === this.selected;
-      },
-      ordinals() {
-        const ords = this.elements.map(e => e.order).sort();
-        console.log("ords", ords);
-        return ords;
       },
       // Methods
       select(element, word) {
@@ -201,8 +212,18 @@
         this.selected = element.id;
         if (word) this.selectedWord = word.id;
       },
+      toggleTools(element) {
+        this.addPoint = this.addPoint === element.order
+          ? this.nextOrdinal()
+          : element.order;
+      },
       add(order, elementType) {
-        const newEl = elementFactory.createElement(elementType || elementFactory.gloss, order);
+        // Shunt down existing elements
+        const newOrdinal = order + 1;
+        this.elements.filter(e => e.order >= newOrdinal).forEach(e => e.order += 1);
+
+        // Add new element
+        const newEl = elementFactory.createElement(elementType || elementFactory.gloss, newOrdinal);
         this.elements.push(newEl);
         console.log("add", order, elementType);
         this.save();
@@ -226,14 +247,16 @@
         this.save();
       },
       moveUp(element) {
-        element.order -= 1;
-        this.elements.sort((a,b) => a.order > b.order);
-        console.log(element);
+        const newOrder = element.order - 1;
+        const swapElement = this.elements.find(e => e.order === newOrder);
+        if (swapElement) swapElement.order += 1;
+        element.order = newOrder;
       },
       moveDown(element) {
-        element.order += 1;
-        this.elements.sort((a,b) => a.order > b.order);
-        console.log(element);
+        const newOrder = element.order + 1;
+        const swapElement = this.elements.find(e => e.order === newOrder);
+        if (swapElement) swapElement.order -= 1;
+        element.order = newOrder;
       },
       reset() {
         var vm = this;
@@ -246,6 +269,9 @@
           }, 1000);
         }
         if (this.resetClicks > 2) this.resetClicks = 0;
+      },
+      blur() {
+        this.save();
       },
       save() {
         console.log("Save");

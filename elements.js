@@ -2,6 +2,7 @@ var ElementFactory = function () {
     this.ab = "ab";
     this.gloss = "gloss";
     this.mnem = "mnem";
+    this.usage = "usage";
     this.h1 = "h1";
 
     this.createElement = function (elementType, order, local, foreign) {
