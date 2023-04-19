@@ -6,14 +6,13 @@ self.addEventListener('install', function(event) {
   event.waitUntil(
     caches.open(version).then(function(cache) {
       return cache.addAll([
-        '/',
-        '/index.htm',
-        '/tachyons.css',
-        '/petite-vue.js',
-        '/elements.js',
-        '/cuid.js',
-        '/icon.png',
-        '/notfound.txt'
+        'index.htm',
+        'tachyons.css',
+        'petite-vue.js',
+        'elements.js',
+        'cuid.js',
+        'icon.png',
+        'notfound.txt'
       ]);
     })
   );
