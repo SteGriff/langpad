@@ -1,0 +1,17 @@
+{
+    "name"              : "Langpad",
+    "short_name"        : "Langpad",
+    "description"       : "Your glossary",
+    "start_url"         : "/",
+    "display"           : "standalone",
+    "orientation"       : "any",
+    "background_color"  : "#FFF",
+    "theme_color"       : "#FFF",
+    "icons": [
+      {
+        "src"           : "/icon.png",
+        "sizes"         : "512x512",
+        "type"          : "image/png"
+      }
+    ]
+  }

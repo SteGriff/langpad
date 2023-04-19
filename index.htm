@@ -251,6 +251,9 @@
   <script src="cuid.js"></script>
   <script src="elements.js"></script>
   <script>
+    if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("/sw.js");
+    }
     const CONTENT = "savedElements";
     const elementFactory = new ElementFactory();
     PetiteVue.createApp({
@@ -267,7 +270,7 @@
       sortLocal: false,
       mounted() {
         console.log("mounted");
-        // Load any complex objects from LS
+        // Load from LS
         const json = window.localStorage.getItem(CONTENT);
         if (json) {
           const saved = JSON.parse(json);
@@ -391,7 +394,7 @@
       save() {
         console.log("Save");
         this.resetClicks = 0;
-        // Persist any complex objects to LS
+        // Save to LS
         const json = JSON.stringify(this.elements);
         window.localStorage.setItem(CONTENT, json);
       },
@@ -407,18 +410,10 @@
         this.copy(allLinesContent, 'TEXT');
       },
       copyVocab() {
-        const allVocabContent = this.allVocab().map(w => {
-          const baseString = elementFactory.wordString(w);
-          if (w.usages) { 
-            const usageStrings = w.usages.map(u => u.phrase).join('\r\n');
-            return [baseString, usageStrings].join('\r\n');
-          }
-          return baseString;
-        }).join('\r\n');
+        const allVocabContent = this.allVocab().map(w => elementFactory.vocabString(w)).join('\r\n');
         this.copy(allVocabContent, 'VOCAB');
       },
       copyJson() {
-        this.save();
         const json = JSON.stringify(this.elements);
         this.copy(json, 'JSON');
       },

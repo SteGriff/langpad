@@ -52,4 +52,13 @@ var ElementFactory = function () {
 
         return word.local;
     }
+
+    this.vocabString = function(word) {
+        const baseString = this.wordString(w);
+        if (w.usages) { 
+          const usageStrings = w.usages.map(u => u.phrase).join('\r\n');
+          return [baseString, usageStrings].join('\r\n');
+        }
+        return baseString;
+    }
 }
