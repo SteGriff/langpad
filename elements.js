@@ -54,9 +54,9 @@ var ElementFactory = function () {
     }
 
     this.vocabString = function(word) {
-        const baseString = this.wordString(w);
-        if (w.usages) { 
-          const usageStrings = w.usages.map(u => u.phrase).join('\r\n');
+        const baseString = this.wordString(word);
+        if (word.usages) { 
+          const usageStrings = word.usages.map(u => u.phrase).join('\r\n');
           return [baseString, usageStrings].join('\r\n');
         }
         return baseString;

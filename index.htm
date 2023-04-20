@@ -11,18 +11,17 @@
   <link rel="apple-touch-icon" href="icon-180.png">
   <link rel="icon" type="image/png" href="icon.png">
   <style>
-    .minw3 { min-width:4rem; }
     .minw4 { min-width:8rem; }
-    .minw5 { min-width:16rem; }
-    .bw1-hover:hover, .bw1-hover:active { border-width:.125rem }
-    .foreign { font-family: 'Garamond', Cambria, Cochin, Georgia, serif; font-weight: bold;}
-    .local { font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif }
+    .minh4 { min-height:8rem; }
+    .bw1-hover:hover, .bw1-hover:active { border-width:.125rem; }
+    .foreign { font-family: 'Garamond', Cambria, Cochin, Georgia, serif; font-weight: bold; }
+    .local { font-family:'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif; }
+    .vocab { max-height: 30rem; overflow-y: scroll; }
     input { border: 1px solid transparent; border-radius: 4px; box-sizing: border-box; }
     input:hover, input:active { border: 1px solid gray; }
     button { border-style: solid; }
   </style>
 </head>
-
 <body class="sans-serif">
   <main v-scope @vue:mounted="mounted" class="mw-100 overflow-hidden">
     <header>
@@ -204,50 +203,56 @@
         </li>
       </ul>
     </div>
-    
-  <!-- Overlay background -->
-  <div
-    v-if="dialog"
-    class="overlay z-2 bg-dark-gray o-70 fixed absolute--fill"
-  ></div>
+      
+    <!-- Overlay background -->
+    <div
+      v-if="dialog"
+      class="overlay z-2 bg-dark-gray o-70 fixed absolute--fill"
+    ></div>
 
-  <!-- Overlay contents -->
-  <div v-if="dialog" class="z-3 fixed top-1 left-1 right-1 ma1 pa2 black ba b--black bw2 bg-white">
-    <div class="flex justify-between mb3">
-      <div class="f3">{{dialog}}</div>
-        <div
-        class="z-3 f3 mr2 pointer"
-        @click="dialog = null"
-      >
-        &times;
+    <!-- Overlay contents -->
+    <div v-if="dialog" class="z-3 fixed top-1 left-1 right-1 ma1 pa2 black ba b--black bw2 bg-white">
+      <div class="flex justify-between mb3">
+        <div class="f3">{{dialog}}</div>
+          <div
+          class="z-3 f3 mr2 pointer"
+          @click="dialog = null"
+        >
+          &times;
+        </div>
+      </div>
+      <div v-if="dialog === 'VOCAB'">
+        <label><input v-model="sortLocal" type="checkbox"> Sort Local</label>
+        <ul class="vocab">
+          <li v-for="v in allVocab()">
+            <span v-if="sortLocal">{{v.local}} &ndash; {{v.foreign}}</span>
+            <span v-else>{{v.foreign}} &ndash; {{v.local}}</span>
+            <ul v-if="v.usages">
+              <li v-for="use in v.usages">{{ use.phrase }}</li>
+            </ul>
+          </li>
+        </ul>
+      </div>
+      <div v-if="dialog === 'EXPORT'" class="center">
+        <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyText()">
+          {{ copied === 'TEXT' ? "✔" : "📋" }} Copy all text
+        </button>
+        <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyVocab()">
+          {{ copied === 'VOCAB' ? "✔" : "📑" }} Copy all vocab
+        </button>
+        <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyJson()">
+          {{ copied === 'JSON' ? "✔" : "💾" }} Copy JSON
+        </button>
+        <button type="button" v-if="!importing" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="importing = true">
+          📁 Import JSON
+        </button>
+        <button type="button" v-else class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="load()">
+          ✅ Load it!
+        </button>
+        <textarea class="w-100 mt3 minh4 code f6" v-if="copied === false">{{ pasteFailContent }}</textarea>
+        <textarea class="w-100 mt3 minh4 code f6" v-if="importing" v-model="importContent"></textarea>
       </div>
     </div>
-    <div v-if="dialog === 'VOCAB'">
-      <label><input v-model="sortLocal" type="checkbox"> Sort Local</label>
-      <ul>
-        <li v-for="v in allVocab()">
-          <span v-if="sortLocal">{{v.local}} &ndash; {{v.foreign}}</span>
-          <span v-else>{{v.foreign}} &ndash; {{v.local}}</span>
-          <ul v-if="v.usages">
-            <li v-for="use in v.usages">{{ use.phrase }}</li>
-          </ul>
-        </li>
-      </ul>
-    </div>
-    <div v-if="dialog === 'EXPORT'" class="center">
-      <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyText()">
-        {{ copied === 'TEXT' ? "✔" : "📋" }} Copy all text
-      </button>
-      <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyVocab()">
-        {{ copied === 'VOCAB' ? "✔" : "📑" }} Copy all vocab
-      </button>
-      <button type="button" class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4" @click="copyJson()">
-        {{ copied === 'JSON' ? "✔" : "💾" }} Copy JSON
-      </button>
-    </div>
-  </div>
-
-
   </main>
 
   <script src="petite-vue.js"></script>
@@ -271,6 +276,9 @@
       addPoint: 0,
       addToolLocation: null,
       sortLocal: false,
+      pasteFailContent: '',
+      importing: false,
+      importContent: '',
       mounted() {
         console.log("mounted");
         // Load from LS
@@ -405,7 +413,10 @@
           navigator.clipboard.writeText(content);
           this.copied = label;
           window.setTimeout(() => (this.copied = null), 1000);
-        } catch (e) {}
+        } catch (e) {
+          this.pasteFailContent = content;
+          this.copied = false;
+        }
       },
       copyText() {
         const allLinesContent = this.elements.map(e => elementFactory.elementString(e)).join('\r\n');
@@ -419,6 +430,11 @@
         const json = JSON.stringify(this.elements);
         this.copy(json, 'JSON');
       },
+      load() {
+        this.elements = JSON.parse(this.importContent);
+        this.importing = false;
+        this.importContent = '';
+      }
     }).mount()
   </script>
 </body>
