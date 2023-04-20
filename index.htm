@@ -318,13 +318,12 @@
       },
       // Methods
       select(element, word) {
-        console.log("select", element.id, word?.id, element.order);
         this.selected = element.id;
         if (word) this.selectedWord = word.id;
       },
       toggleTools(element) {
         const toolLocationTarget = element ? 'ELEMENT' : 'END';
-        this.addPoint = element?.order || this.nextOrdinal();
+        this.addPoint = element ? element.order : this.nextOrdinal();
         this.addToolLocation = this.addToolLocation === toolLocationTarget 
           ? null 
           : toolLocationTarget;
