@@ -326,8 +326,15 @@
       },
       // Methods
       select(element, word) {
+        const prevSelected = this.selected;
         this.selected = element.id;
         if (word) this.selectedWord = word.id;
+        if (this.selected !== prevSelected) this.hideElementTools();
+      },
+      hideElementTools() {
+        if (this.addToolLocation === 'ELEMENT')
+          this.addToolLocation = null;
+        console.log("hideElementTools", this.addToolLocation, this.addPoint);
       },
       toggleTools(element) {
         const toolLocationTarget = element ? 'ELEMENT' : 'END';
