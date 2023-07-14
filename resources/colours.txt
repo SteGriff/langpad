@@ -1,0 +1,5 @@
+Light green
+#00ffa2
+
+Dark blue
+#004466

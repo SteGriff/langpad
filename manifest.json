@@ -1,12 +1,12 @@
 {
-    "name"              : "Langpad",
-    "short_name"        : "Langpad",
+    "name"              : "Lingomio",
+    "short_name"        : "Lingomio",
     "description"       : "Your glossary",
     "start_url"         : ".",
     "display"           : "standalone",
     "orientation"       : "any",
     "background_color"  : "#FFF",
-    "theme_color"       : "#FFF",
+    "theme_color"       : "#004466",
     "icons": [
       {
         "src"           : "icon.png",
