@@ -1,0 +1,46 @@
+{% extends "main.njk" %}
+
+{% block styles %}
+    <style>
+        .minw4 {
+            min-width: 8rem;
+        }
+        .minh4 {
+            min-height: 8rem;
+        }
+        .bw1-hover:active,
+        .bw1-hover:hover {
+            border-width: 0.125rem;
+        }
+        .foreign {
+            font-family: Candara, 'Noto Serif', serif;
+        }
+        .local {
+            font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+        }
+        .vocab {
+            max-height: 30rem;
+            overflow-y: scroll;
+        }
+        input {
+            border: 1px solid transparent;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input:active,
+        input:hover {
+            border: 1px solid gray;
+        }
+        button {
+            border-style: solid;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+    {% include "app.htm" %}
+    <script src="petite-vue.js"></script>
+    <script src="cuid.js"></script>
+    <script src="elements.js"></script>
+    <script src="app.js"></script>
+{% endblock %}

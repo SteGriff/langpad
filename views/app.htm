@@ -1,0 +1,311 @@
+<div v-scope @vue:mounted="mounted" class="mw-100 overflow-hidden">
+  <header>
+    <div class="bg-black-90 flex pa3 w-100 center white">
+      <div class="hamburger"></div>
+      <h1 class="white f5 b">Lingomio</h1>
+
+      <p class="ml-auto mv2 f6">
+        <button
+          class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
+          @click="dialog = 'EXPORT'"
+        >
+          Export
+        </button>
+      </p>
+      <p class="mv2 f6">
+        <button
+          class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
+          @click="dialog = 'VOCAB'"
+        >
+          Vocab
+        </button>
+      </p>
+      <p class="mv2 f6">
+        <button
+          class="ba bw1 b--white bg-gold w-90 black tc b pointer grow pa1 mh2"
+          @click="reset()"
+        >
+          {{ resetBtnTexts[resetClicks] }}
+        </button>
+      </p>
+    </div>
+  </header>
+
+  <main class="ma3">
+    <div v-for="el in orderedElements()" class="mv2">
+      <!-- Heading Element -->
+      <div v-if="el.elementType === elementFactory.h1">
+        <div class="flex justify-center">
+          <input
+            class="pa2 f3 mh1 mh2-ns w-40 minw4 local tc"
+            v-model="el.words[0].local"
+            placeholder="Heading"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+        </div>
+      </div>
+
+      <!-- Gloss Element -->
+      <div v-if="el.elementType === elementFactory.gloss">
+        <div class="flex justify-center">
+          <input
+            class="pa2 f4 mh1 mh2-ns w-40 minw4 foreign tr"
+            v-model="el.words[0].foreign"
+            placeholder="A word to learn"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+          <input
+            class="pa2 f4 mh1 mh2-ns w-40 minw4 local tl"
+            v-model="el.words[0].local"
+            placeholder="Meaning/gloss"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+        </div>
+      </div>
+
+      <!-- A/B Element -->
+      <div v-if="el.elementType === elementFactory.ab">
+        <div class="flex flex-wrap justify-center items-center">
+          <div
+            v-for="word in el.words"
+            class="ba b--light-gray br1 mv2 mh1 mh2-ns w-25 minw4"
+          >
+            <input
+              class="db pa2 f4 foreign w-100 tc"
+              v-model="word.foreign"
+              placeholder="Vocab"
+              @focus="select(el, word)"
+              @blur="blur()"
+            />
+            <input
+              class="db pa2 f5 local w-100 tc"
+              v-model="word.local"
+              placeholder="Gloss"
+              @focus="select(el, word)"
+              @blur="blur()"
+            />
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Element -->
+      <div v-if="el.elementType === elementFactory.usage">
+        <div>
+          <input
+            class="pa2 f4 mh1 mh2-ns w-100 minw4 foreign tc"
+            v-model="el.words[0].phrase"
+            placeholder="An example sentence"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+        </div>
+        <div>
+          <input
+            class="pa2 f5 mh1 mh2-ns w-100 minw4 local tc"
+            v-model="el.words[0].local"
+            placeholder="Meaning"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+        </div>
+      </div>
+
+      <!-- Mnemonic Element -->
+      <div v-if="el.elementType === elementFactory.mnem">
+        <div>
+          <input
+            class="pa2 f4 mh1 mh2-ns w-100 minw4 foreign tc"
+            v-model="el.words[0].phrase"
+            placeholder="A helpful mnemonic"
+            @focus="select(el)"
+            @blur="blur()"
+          />
+        </div>
+      </div>
+
+      <!-- Buttons -->
+      <div class="flex flex-wrap justify-center items-center" v-if="isSel(el)">
+        <span class="f5 mh2">{{el.order}}</span>
+        <button
+          type="button"
+          class="pointer pa0 tc w2 h2 ma1 mr3 b--black bw1 br2 bg-white black"
+          v-if="el.order !== maxOrdinal()"
+          @click="toggleTools(el)"
+        >
+          📚
+        </button>
+
+        <button
+          type="button"
+          v-if="el.elementType === elementFactory.ab"
+          class="pointer pa0 tc w2 h2 ma1 b--green bw1 br2 bg-white black"
+          @click="addWord(el)"
+        >
+          +
+        </button>
+        <button
+          type="button"
+          v-if="el.elementType === elementFactory.ab"
+          class="pointer pa0 tc w2 h2 ma1 mr3 b--blue bw1 br2 bg-white black"
+          @click="removeWord(el, selectedWord)"
+        >
+          &minus;
+        </button>
+
+        <button
+          type="button"
+          class="pointer pa0 tc w2 h2 ma1 b--black bw1 br2 bg-white black"
+          @click="moveUp(el)"
+        >
+          &uparrow;
+        </button>
+        <button
+          type="button"
+          class="pointer pa0 tc w2 h2 ma1 b--red bw1 br2 bg-white red"
+          @click="remove(el)"
+        >
+          &times;
+        </button>
+        <button
+          type="button"
+          class="pointer pa0 tc w2 h2 ma1 b--black bw1 br2 bg-white black"
+          @click="moveDown(el)"
+        >
+          &downarrow;
+        </button>
+      </div>
+
+      <!-- New Element Tools -->
+      <div
+        class="flex flex-wrap justify-center mt1"
+        :class="{'mt1' : addToolLocation === 'ELEMENT', 'mt4' : addToolLocation === 'END'}"
+        v-if="showTools(el)"
+      >
+        <button
+          type="button"
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+          @click="add(elementFactory.h1)"
+        >
+          Heading 📰
+        </button>
+        <button
+          type="button"
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+          @click="add(elementFactory.gloss)"
+        >
+          Gloss 📔
+        </button>
+        <button
+          type="button"
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+          @click="add(elementFactory.ab)"
+        >
+          A/B 🆎
+        </button>
+        <button
+          type="button"
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+          @click="add(elementFactory.mnem)"
+        >
+          Mnemonic 🧠
+        </button>
+        <button
+          type="button"
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+          @click="add(elementFactory.usage)"
+        >
+          Usage 🦜
+        </button>
+      </div>
+    </div>
+
+    <div class="flex justify-center mt4" v-if="addToolLocation !== 'END'">
+      <button
+        type="button"
+        class="pointer pa2 ma2 b--black bw1 br2 bg-white black minw4"
+        @click="toggleTools()"
+      >
+        Add 📚
+      </button>
+    </div>
+  </main>
+
+  <!-- Overlay background -->
+  <div
+    v-if="dialog"
+    class="overlay z-2 bg-dark-gray o-70 fixed absolute--fill"
+  ></div>
+
+  <!-- Overlay contents -->
+  <div
+    v-if="dialog"
+    class="z-3 fixed top-1 left-1 right-1 ma1 pa2 black ba b--black bw2 bg-white"
+  >
+    <div class="flex justify-between mb3">
+      <div class="f3">{{dialog}}</div>
+      <div class="z-3 f3 mr2 pointer" @click="dialog = null">&times;</div>
+    </div>
+    <div v-if="dialog === 'VOCAB'">
+      <label><input v-model="sortLocal" type="checkbox" /> Sort Local</label>
+      <ul class="vocab">
+        <li v-for="v in allVocab()">
+          <span v-if="sortLocal">{{v.local}} &ndash; {{v.foreign}}</span>
+          <span v-else>{{v.foreign}} &ndash; {{v.local}}</span>
+          <ul v-if="v.usages">
+            <li v-for="use in v.usages">{{ use.phrase }}</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div v-if="dialog === 'EXPORT'" class="center">
+      <button
+        type="button"
+        class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4"
+        @click="copyText()"
+      >
+        {{ copied === 'TEXT' ? "✔" : "📋" }} Copy all text
+      </button>
+      <button
+        type="button"
+        class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4"
+        @click="copyVocab()"
+      >
+        {{ copied === 'VOCAB' ? "✔" : "📑" }} Copy all vocab
+      </button>
+      <button
+        type="button"
+        class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4"
+        @click="copyJson()"
+      >
+        {{ copied === 'JSON' ? "✔" : "💾" }} Copy JSON
+      </button>
+      <button
+        type="button"
+        v-if="!importing"
+        class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4"
+        @click="importing = true"
+      >
+        📁 Import JSON
+      </button>
+      <button
+        type="button"
+        v-else
+        class="pointer db pa2 ma1 center b--black bw1 br2 bg-white black minw4"
+        @click="load()"
+      >
+        ✅ Load it!
+      </button>
+      <textarea class="w-100 mt3 minh4 code f6" v-if="copied === false">
+{{ pasteFailContent }}</textarea
+      >
+      <textarea
+        class="w-100 mt3 minh4 code f6"
+        v-if="importing"
+        v-model="importContent"
+      ></textarea>
+    </div>
+  </div>
+</div>

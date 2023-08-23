@@ -1,0 +1,31 @@
+{
+  "name": "sg-login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.mjs",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "nodemon index.mjs",
+    "start": "node index.mjs",
+    "migrations": "node migrations.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Ste Griffiths",
+  "license": "MIT",
+  "dependencies": {
+    "better-sqlite3": "^8.5.0",
+    "better-sqlite3-session-store": "^0.1.0",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "express-nunjucks": "^3.1.1",
+    "express-session": "^1.17.3",
+    "zxcvbn": "^4.4.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  },
+  "engines": {
+    "node": "18.x"
+  }
+}
