@@ -1,12 +1,31 @@
 <div v-scope @vue:mounted="mounted" class="mw-100 overflow-hidden">
   <header>
     <div class="bg-black-90 flex pa3 w-100 center white">
-      <div class="hamburger"></div>
+      <div class="mv2 mr2">
+        <button
+          class="sqr-28 ba bw1 b--white bg-black white tc b pointer pt1"
+          @click="menu = !menu"
+        >
+          <svg
+            aria-hidden="true"
+            height="16"
+            viewBox="0 0 16 16"
+            version="1.1"
+            width="16"
+            data-view-component="true"
+            class="icon-white"
+          >
+            <path
+              d="M1 2.75A.75.75 0 0 1 1.75 2h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 2.75Zm0 5A.75.75 0 0 1 1.75 7h12.5a.75.75 0 0 1 0 1.5H1.75A.75.75 0 0 1 1 7.75ZM1.75 12h12.5a.75.75 0 0 1 0 1.5H1.75a.75.75 0 0 1 0-1.5Z"
+            ></path>
+          </svg>
+        </button>
+      </div>
       <h1 class="white f5 b">Lingomio</h1>
 
       <p class="ml-auto mv2 f6">
         <button
-          class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
+          class="ba bw1 b--white bg-black w-90 white tc b pointer pa1 mh2"
           @click="dialog = 'EXPORT'"
         >
           Export
@@ -29,6 +48,30 @@
         </button>
       </p>
     </div>
+    <nav
+      v-if="menu"
+      class="fixed bg-black white left-0 right-0 top-0 bottom-0 pa3"
+    >
+      <div class="flex w-100 center">
+        <div class="mv2 mr2">
+          <button
+            class="sqr-28 ba bw1 b--white bg-black white tc b pointer f4"
+            @click="menu = !menu"
+          >
+            <span class="pull-up">&times;</span>
+          </button>
+        </div>
+        <h1 class="white f5 b">Lingomio</h1>
+      </div>
+      <p class="b">My Book 1</p>
+      <p>📚 Books</p>
+      <p>✨ New Book</p>
+      <hr />
+      <p>📤 Export</p>
+      <p>👩‍🏫 Vocab</p>
+      <hr />
+      <p>👋 Log out</p>
+    </nav>
   </header>
 
   <main class="ma3">

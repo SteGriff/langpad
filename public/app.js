@@ -6,6 +6,7 @@ const elementFactory = new ElementFactory();
 PetiteVue.createApp({
   message: "Welcome",
   dialog: null,
+  menu: false,
   copied: null,
   resetClicks: 0,
   resetBtnTexts: ["New", "Sure?", "Pew!"],
