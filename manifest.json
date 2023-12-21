@@ -1,6 +1,6 @@
 {
-    "name"              : "Lingomio",
-    "short_name"        : "Lingomio",
+    "name"              : "Langpad",
+    "short_name"        : "Langpad",
     "description"       : "Your glossary",
     "start_url"         : ".",
     "display"           : "standalone",

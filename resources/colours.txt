@@ -1,5 +1,18 @@
+Lingomio
+
 Light green
 #00ffa2
 
 Dark blue
 #004466
+
+Langpad
+
+Background
+#4f8487
+
+Mid green
+#17deaa
+
+Cyan
+#23fee1
