@@ -1,15 +1,30 @@
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("sw.js");
+  //navigator.serviceWorker.register("sw.js");
 }
-const CONTENT = "savedElements";
+const CONTENT = "savedBook";
+const USER = "user";
+const CREDS = "creds";
 const elementFactory = new ElementFactory();
+const nameFactory = new NameFactory();
+const storageLoad = (key) => {
+  const json = window.localStorage.getItem(key);
+  if (json) {
+    const saved = JSON.parse(json);
+    return saved || null;
+  }
+};
+const newBook = () => {
+  return {
+    name: nameFactory.nameForA("book"),
+    elements: elementFactory.initElements()
+  };
+};
 PetiteVue.createApp({
   message: "Welcome",
   dialog: null,
   menu: false,
   copied: null,
-  resetClicks: 0,
-  resetBtnTexts: ["New", "Sure?", "Pew!"],
+  currentBook: newBook(),
   elements: elementFactory.initElements(),
   selected: null,
   selectedWord: null,
@@ -19,33 +34,32 @@ PetiteVue.createApp({
   pasteFailContent: "",
   importing: false,
   importContent: "",
+  userModel: null,
+  credentials: null,
   mounted() {
     console.log("mounted");
     // Load from LS
-    const json = window.localStorage.getItem(CONTENT);
-    if (json) {
-      const saved = JSON.parse(json);
-      if (saved && Array.isArray(saved)) {
-        this.elements = saved;
-      }
-    }
+    this.currentBook = storageLoad(CONTENT) || this.currentBook;
+    this.userModel = storageLoad(USER) || this.userModel;
+    this.credentials = storageLoad(CREDS) || this.credentials;
+    // Set up
     this.addPoint = this.nextOrdinal();
   },
   // Computed
   maxOrdinal() {
-    const max = Math.max(...this.elements.map((e) => e.order)) || 0;
+    const max = Math.max(...this.currentBook.elements.map((e) => e.order)) || 0;
     return max;
   },
   nextOrdinal() {
-    const max = Math.max(...this.elements.map((e) => e.order)) || 0;
+    const max = Math.max(...this.currentBook.elements.map((e) => e.order)) || 0;
     console.log("nextOrdinal", max + 1);
     return max + 1;
   },
   orderedElements() {
-    return this.elements.sort((a, b) => a.order - b.order);
+    return this.currentBook.elements.sort((a, b) => a.order - b.order);
   },
   allVocab() {
-    const all = [...this.elements].flatMap((e) => e.words);
+    const all = [...this.currentBook.elements].flatMap((e) => e.words);
     const allWords = all.filter((e) => e.foreign > "");
     const allUsages = all.filter((e) => e.phrase > "");
     if (this.sortLocal) allWords.sort((a, b) => a.local.localeCompare(b.local));
@@ -94,7 +108,7 @@ PetiteVue.createApp({
 
     // Shunt down existing elements
     const newOrdinal = order + 1;
-    this.elements
+    this.currentBook.elements
       .filter((e) => e.order >= newOrdinal)
       .forEach((e) => (e.order += 1));
 
@@ -103,16 +117,16 @@ PetiteVue.createApp({
       elementType || elementFactory.gloss,
       newOrdinal
     );
-    this.elements.push(newEl);
+    this.currentBook.elements.push(newEl);
     console.log("add", order, elementType);
     this.save();
   },
   remove(element) {
-    const removeIndex = this.elements.findIndex((e) => e.id === element.id);
-    console.log("remove removeIndex", removeIndex, this.elements);
-    this.elements.splice(removeIndex, 1);
+    const removeIndex = this.currentBook.elements.findIndex((e) => e.id === element.id);
+    console.log("remove removeIndex", removeIndex, this.currentBook.elements);
+    this.currentBook.elements.splice(removeIndex, 1);
     // Renumber elements to remove ordinal gaps
-    this.elements
+    this.currentBook.elements
       .sort((a, b) => a.order - b.order)
       .forEach((el, index) => {
         el.order = index;
@@ -133,36 +147,23 @@ PetiteVue.createApp({
   },
   moveUp(element) {
     const newOrder = element.order - 1;
-    const swapElement = this.elements.find((e) => e.order === newOrder);
+    const swapElement = this.currentBook.elements.find((e) => e.order === newOrder);
     if (swapElement) swapElement.order += 1;
     element.order = newOrder;
   },
   moveDown(element) {
     const newOrder = element.order + 1;
-    const swapElement = this.elements.find((e) => e.order === newOrder);
+    const swapElement = this.currentBook.elements.find((e) => e.order === newOrder);
     if (swapElement) swapElement.order -= 1;
     element.order = newOrder;
-  },
-  reset() {
-    var vm = this;
-    this.resetClicks++;
-    if (this.resetClicks === 2) {
-      this.elements = elementFactory.initElements();
-      this.save();
-      setTimeout(function () {
-        vm.resetClicks = 0;
-      }, 1000);
-    }
-    if (this.resetClicks > 2) this.resetClicks = 0;
   },
   blur() {
     this.save();
   },
   save() {
     console.log("Save");
-    this.resetClicks = 0;
     // Save to LS
-    const json = JSON.stringify(this.elements);
+    const json = JSON.stringify(this.currentBook);
     window.localStorage.setItem(CONTENT, json);
   },
   copy(content, label) {
@@ -176,7 +177,7 @@ PetiteVue.createApp({
     }
   },
   copyText() {
-    const allLinesContent = this.elements
+    const allLinesContent = this.currentBook.elements
       .map((e) => elementFactory.elementString(e))
       .join("\r\n");
     this.copy(allLinesContent, "TEXT");
@@ -188,11 +189,11 @@ PetiteVue.createApp({
     this.copy(allVocabContent, "VOCAB");
   },
   copyJson() {
-    const json = JSON.stringify(this.elements);
+    const json = JSON.stringify(this.currentBook.elements);
     this.copy(json, "JSON");
   },
   load() {
-    this.elements = JSON.parse(this.importContent);
+    this.currentBook.elements = JSON.parse(this.importContent);
     this.importing = false;
     this.importContent = "";
   },

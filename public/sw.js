@@ -1,5 +1,5 @@
 
-const version = 'v1';
+const version = 'v2';
 
 self.addEventListener('install', function(event) {
   console.log("Install", version);
@@ -11,6 +11,7 @@ self.addEventListener('install', function(event) {
         'petite-vue.js',
         'elements.js',
         'cuid.js',
+        'names.js',
         'icon.png',
         'notfound.txt'
       ]);

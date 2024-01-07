@@ -23,30 +23,6 @@
       </div>
       <h1 class="white f5 b">Lingomio</h1>
 
-      <p class="ml-auto mv2 f6">
-        <button
-          class="ba bw1 b--white bg-black w-90 white tc b pointer pa1 mh2"
-          @click="dialog = 'EXPORT'"
-        >
-          Export
-        </button>
-      </p>
-      <p class="mv2 f6">
-        <button
-          class="ba bw1 b--white bg-black w-90 white tc b pointer grow pa1 mh2"
-          @click="dialog = 'VOCAB'"
-        >
-          Vocab
-        </button>
-      </p>
-      <p class="mv2 f6">
-        <button
-          class="ba bw1 b--white bg-gold w-90 black tc b pointer grow pa1 mh2"
-          @click="reset()"
-        >
-          {{ resetBtnTexts[resetClicks] }}
-        </button>
-      </p>
     </div>
     <nav
       v-if="menu"
@@ -63,14 +39,17 @@
         </div>
         <h1 class="white f5 b">Lingomio</h1>
       </div>
+      <p v-if="userModel" class="b">{{userModel.name}}</p>
+      <p v-else class="b">🔑 <a class="pointer" @click="dialog = 'LOGIN'">Log in</a></p>
+      <hr />
       <p class="b">My Book 1</p>
       <p>📚 Books</p>
       <p>✨ New Book</p>
       <hr />
-      <p>📤 Export</p>
-      <p>👩‍🏫 Vocab</p>
+      <p>📤 <a class="pointer" @click="dialog = 'EXPORT'">Export</a></p>
+      <p>👩‍🏫 <a class="pointer" @click="dialog = 'VOCAB'">Vocab</a></p>
       <hr />
-      <p>👋 Log out</p>
+      <p v-if="userModel">👋 <a class="pointer" @click="logout()"></a>Log out</a></p>
     </nav>
   </header>
 
@@ -171,7 +150,6 @@
 
       <!-- Buttons -->
       <div class="flex flex-wrap justify-center items-center" v-if="isSel(el)">
-        <span class="f5 mh2">{{el.order}}</span>
         <button
           type="button"
           class="pointer pa0 tc w2 h2 ma1 mr3 b--black bw1 br2 bg-white black"
@@ -290,6 +268,24 @@
     <div class="flex justify-between mb3">
       <div class="f3">{{dialog}}</div>
       <div class="z-3 f3 mr2 pointer" @click="dialog = null">&times;</div>
+    </div>
+    <div v-if="dialog === 'LOGIN'">
+      <form @submit.prevent="login()">
+        <label>
+          Username:
+            <input name="username" type="text" placeholder="Username"
+              class="pa2 f4 mh1 mh2-ns w-40 minw4">
+        </label>
+        <label>
+          Password:
+            <input name="password" type="password" placeholder="Password"
+              class="pa2 f4 mh1 mh2-ns w-40 minw4">
+        </label>
+        <button type="submit" 
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4">
+            Log in
+          </button>
+      </form>
     </div>
     <div v-if="dialog === 'VOCAB'">
       <label><input v-model="sortLocal" type="checkbox" /> Sort Local</label>
