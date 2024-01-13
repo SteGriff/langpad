@@ -3,7 +3,6 @@ if ("serviceWorker" in navigator) {
 }
 const CONTENT = "savedBook";
 const USER = "user";
-const CREDS = "creds";
 const elementFactory = new ElementFactory();
 const nameFactory = new NameFactory();
 const storageLoad = (key) => {
@@ -35,13 +34,13 @@ PetiteVue.createApp({
   importing: false,
   importContent: "",
   userModel: null,
-  credentials: null,
+  username: '',
+  password: '',
   mounted() {
     console.log("mounted");
     // Load from LS
     this.currentBook = storageLoad(CONTENT) || this.currentBook;
     this.userModel = storageLoad(USER) || this.userModel;
-    this.credentials = storageLoad(CREDS) || this.credentials;
     // Set up
     this.addPoint = this.nextOrdinal();
   },
@@ -197,4 +196,18 @@ PetiteVue.createApp({
     this.importing = false;
     this.importContent = "";
   },
+  async login() {
+    const data = { "username": this.username, "password": this.password };
+    const response = await fetch("/api/login/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    const json = await response.json();
+    console.log(json);
+    if (json.status === "OK")
+      this.userModel = json.model;
+  }
 }).mount();
