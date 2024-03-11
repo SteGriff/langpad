@@ -39,8 +39,8 @@
         </div>
         <h1 class="white f5 b">Lingomio</h1>
       </div>
-      <p v-if="userModel" class="b">{{userModel.name}}</p>
-      <p v-else class="b">🔑 <a class="pointer" @click="dialog = 'LOGIN'">Log in</a></p>
+      <p v-if="userModel" class="b">{{userModel.Username}}</p>
+      <p v-else class="b"><a class="pointer" @click="dialog = 'LOGIN'">🔑 Log in</a></p>
       <hr />
       <p class="b">My Book 1</p>
       <p>📚 Books</p>
@@ -49,7 +49,7 @@
       <p>📤 <a class="pointer" @click="dialog = 'EXPORT'">Export</a></p>
       <p>👩‍🏫 <a class="pointer" @click="dialog = 'VOCAB'">Vocab</a></p>
       <hr />
-      <p v-if="userModel">👋 <a class="pointer" @click="logout()"></a>Log out</a></p>
+      <p v-if="userModel"><a class="pointer" @click="logout()">👋 Log out</a></p>
     </nav>
   </header>
 
@@ -271,22 +271,33 @@
     </div>
     <div v-if="dialog === 'LOGIN'">
       <form @submit.prevent="login()">
+        <div>
         <label>
           Username:
             <input name="username" type="text" placeholder="Username" 
               v-model="username"
               class="pa2 f4 mh1 mh2-ns w-40 minw4">
         </label>
+      </div>
+      <div>
         <label>
           Password:
             <input name="password" type="password" placeholder="Password" 
               v-model="password"
               class="pa2 f4 mh1 mh2-ns w-40 minw4">
         </label>
+      </div>
+      <div class="mv2">
+        <span v-if="message" class="mv2">{{message}}</span>
         <button type="submit" 
-          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4">
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4 b">
             Log in
           </button>
+          <button type="button" 
+          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4">
+            Cancel
+          </button>
+        </div>
       </form>
     </div>
     <div v-if="dialog === 'VOCAB'">

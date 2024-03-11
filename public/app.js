@@ -19,7 +19,7 @@ const newBook = () => {
   };
 };
 PetiteVue.createApp({
-  message: "Welcome",
+  message: null,
   dialog: null,
   menu: false,
   copied: null,
@@ -207,7 +207,21 @@ PetiteVue.createApp({
     });
     const json = await response.json();
     console.log(json);
-    if (json.status === "OK")
+    if (json.status === "OK") {
       this.userModel = json.model;
+      this.dialog = null;
+      // Load books/data?
+    }
+    else {
+      this.message = json.message;
+    }
+  },
+  async logout() {
+    console.log("logout");
+    await fetch("/api/logout/", {
+      method: "POST"
+    });
+    this.userModel = null;
+    // Clear all books/data?
   }
 }).mount();
