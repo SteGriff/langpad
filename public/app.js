@@ -36,8 +36,11 @@ PetiteVue.createApp({
   userModel: null,
   username: '',
   password: '',
-  mounted() {
+  async mounted() {
     console.log("mounted");
+    // Check session
+    await this.checkSession();
+
     // Load from LS
     this.currentBook = storageLoad(CONTENT) || this.currentBook;
     this.userModel = storageLoad(USER) || this.userModel;
@@ -208,9 +211,7 @@ PetiteVue.createApp({
     const json = await response.json();
     console.log(json);
     if (json.status === "OK") {
-      this.userModel = json.model;
-      this.dialog = null;
-      // Load books/data?
+      this.setUser(json.model);
     }
     else {
       this.message = json.message;
@@ -223,5 +224,17 @@ PetiteVue.createApp({
     });
     this.userModel = null;
     // Clear all books/data?
+  },
+  setUser(model) {
+    this.userModel = model;
+    this.dialog = null;
+    // TODO Load books/data...
+  },
+  async checkSession() {
+    const response = await fetch("/api/user/");
+    const json = await response.json();
+    if (json.status === "OK") {
+      this.setUser(json.model);
+    }
   }
 }).mount();

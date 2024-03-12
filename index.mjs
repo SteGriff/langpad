@@ -8,6 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { authenticateUser, createUser, auth } from "./logic/auth.mjs";
 import { getSuccess, isSuccess } from "./results.mjs";
+import { createOrUpdateBook, getBooks, upsertBook } from "./logic/books.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -139,7 +140,25 @@ app.post("/api/logout", async (req, res) => {
   return res.json(response);
 });
 
-// listen for requests :)
+// Books
+app.get("/api/books", auth, async (req, res) => {
+  return res.json(getBooks(db, req.session.user.ID));
+});
+
+app.post("/api/book/:cuid", async (req, res, cuid) => {
+  const result = createOrUpdateBook(
+    db,
+    cuid,
+    req.body.name,
+    req.session.user.ID,
+    req.body.elements
+  );
+  // if (isSuccess(result))
+  //   await trySetSessionUser(req);
+  return res.json(result);
+});
+
+// Start server
 const listener = app.listen(process.env.PORT || 443, () => {
   console.log("Your app is listening on port " + listener.address().port);
 });
