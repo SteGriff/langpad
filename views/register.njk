@@ -9,9 +9,9 @@
         <button type="submit">Register</button>
     </form>
     {% if message %}
-        <p>{{message}}</p>
+        <p>{$ message $}</p>
         {% if model %}
-            <p>Strength: {{model.score}}/5 (must be 3 or more)</p>
+            <p>Strength: {$ model.score $}/5 (must be 3 or more)</p>
         {% endif %}
     {% endif %}
 {% endblock %}

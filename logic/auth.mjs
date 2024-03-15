@@ -22,6 +22,7 @@ const maskUser = (user) => {
     ID: user.ID,
     Username: user.Username,
     Email: user.Email,
+    CurrentBook: user.CurrentBook
   };
 };
 

@@ -8,7 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { authenticateUser, createUser, auth } from "./logic/auth.mjs";
 import { getSuccess, isSuccess } from "./results.mjs";
-import { createOrUpdateBook, getBooks, upsertBook } from "./logic/books.mjs";
+import { createOrUpdateBook, getBooks } from "./logic/books.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -29,8 +29,8 @@ const njk = expressNunjucks(app, {
   watch: isDev,
   noCache: isDev,
   tags: {
-    variableStart: "<$",
-    variableEnd: "$>",
+    variableStart: "{$",
+    variableEnd: "$}",
   },
 });
 
@@ -84,6 +84,7 @@ const getModel = (req) => {
 };
 
 // Routes
+// - Views and PRG
 
 app.get("/", (req, res) => res.render("index", getModel(req)));
 
@@ -113,6 +114,8 @@ app.post("/logout", async (req, res) => {
   req.session.destroy();
   res.redirect("/");
 });
+
+// - JSON API
 
 app.get("/api", async (_, res) => {
   return res.json(getSuccess());
@@ -145,10 +148,12 @@ app.get("/api/books", auth, async (req, res) => {
   return res.json(getBooks(db, req.session.user.ID));
 });
 
-app.post("/api/book/:cuid", async (req, res, cuid) => {
+app.post("/api/book/:cuid", auth, async (req, res) => {
+  const bookCuid = req.params.cuid;
+  console.log("POST book", bookCuid)
   const result = createOrUpdateBook(
     db,
-    cuid,
+    bookCuid,
     req.body.name,
     req.session.user.ID,
     req.body.elements

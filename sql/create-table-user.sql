@@ -7,5 +7,6 @@ create table [User]
   [Email] nvarchar(255) null,
   [Password] nvarchar(100) not null,
   [Salt] nvarchar(200) not null,
-  [Active] int not null default 1
+  [Active] int not null default 1,
+  [CurrentBook] nvarchar(25) null
 );

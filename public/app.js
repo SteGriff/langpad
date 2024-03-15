@@ -24,7 +24,7 @@ PetiteVue.createApp({
   menu: false,
   copied: null,
   currentBook: newBook(),
-  elements: elementFactory.initElements(),
+  //elements: elementFactory.initElements(),
   selected: null,
   selectedWord: null,
   addPoint: 0,

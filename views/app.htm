@@ -10,9 +10,7 @@
             aria-hidden="true"
             height="16"
             viewBox="0 0 16 16"
-            version="1.1"
             width="16"
-            data-view-component="true"
             class="icon-white"
           >
             <path
@@ -22,11 +20,10 @@
         </button>
       </div>
       <h1 class="white f5 b">Lingomio</h1>
-
     </div>
     <nav
       v-if="menu"
-      class="fixed bg-black white left-0 right-0 top-0 bottom-0 pa3"
+      class="fixed bg-black white left-0 right-0 top-0 bottom-0 mw6-ns pa3"
     >
       <div class="flex w-100 center">
         <div class="mv2 mr2">
@@ -42,9 +39,9 @@
       <p v-if="userModel" class="b">{{userModel.Username}}</p>
       <p v-else class="b"><a class="pointer" @click="dialog = 'LOGIN'">🔑 Log in</a></p>
       <hr />
-      <p class="b">My Book 1</p>
-      <p>📚 Books</p>
-      <p>✨ New Book</p>
+      <p class="b">{{ currentBook.name }}</p>
+      <p><a class="pointer" @click="dialog = 'BOOKS'">📚 Books</a></p>
+      <p><a class="pointer" @click="startNew()">✨ New Book</a></p>
       <hr />
       <p>📤 <a class="pointer" @click="dialog = 'EXPORT'">Export</a></p>
       <p>👩‍🏫 <a class="pointer" @click="dialog = 'VOCAB'">Vocab</a></p>

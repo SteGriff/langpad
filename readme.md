@@ -22,7 +22,7 @@ Jumping back in:
 
  + 💿 No DB? Run first time DB setup scripts: `npm run migrations`
  + 🧨 Old data? Clear down everything with the same command!
- + 🚦 `npm run start`
+ + 🚦 `npm run dev`
  + Register at <http://localhost:1954/register>
  + Visit app at root URL <http://localhost:1954/>
 
@@ -32,7 +32,8 @@ Docs:
      - `.run` is fire and forget (returns row id)
      - `.get` gets 1 row as object
      - `.all` returns array of row objects
-     
+ + https://github.com/Huachao/vscode-restclient
+
 ## Tech
 
 Based on `sg-login`:
