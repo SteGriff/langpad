@@ -8,7 +8,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import { authenticateUser, createUser, auth } from "./logic/auth.mjs";
 import { getSuccess, isSuccess } from "./results.mjs";
-import { createOrUpdateBook, getBooks } from "./logic/books.mjs";
+import { createOrUpdateBook, getBook, getBooks } from "./logic/books.mjs";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -145,21 +145,33 @@ app.post("/api/logout", async (req, res) => {
 
 // Books
 app.get("/api/books", auth, async (req, res) => {
-  return res.json(getBooks(db, req.session.user.ID));
+  const userId = req.session.user.ID;
+  return res.json(getBooks(db, userId, true));
+});
+
+app.get("/api/book/:cuid", auth, async (req, res) => {
+  const bookCuid = req.params.cuid;
+  const userId = req.session.user.ID;
+  console.log("GET book", bookCuid)
+  const result = getBook(
+    db,
+    bookCuid,
+    userId
+  );
+  return res.json(result);
 });
 
 app.post("/api/book/:cuid", auth, async (req, res) => {
   const bookCuid = req.params.cuid;
+  const userId = req.session.user.ID;
   console.log("POST book", bookCuid)
   const result = createOrUpdateBook(
     db,
     bookCuid,
     req.body.name,
-    req.session.user.ID,
+    userId,
     req.body.elements
   );
-  // if (isSuccess(result))
-  //   await trySetSessionUser(req);
   return res.json(result);
 });
 

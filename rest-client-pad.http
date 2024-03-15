@@ -10,7 +10,7 @@ content-type: application/json
     "password": "earl grey hot"
 }
 
-### Get Books for User
+### Get Books metadata for User
 
 GET http://localhost:1954/api/books
 
@@ -23,3 +23,7 @@ content-type: application/json
     "name": "Enterprise Book",
     "elements": [{"id":"cltsv8hml00002a69f01ejx03","elementType":"h1","order":0,"alignment":0,"words":[{"id":"cltsv8hmm00012a69job8d84d","local":"Greetings","foreign":"","phrase":""}]},{"id":"cltsv8hmm00022a69s500m472","elementType":"gloss","order":1,"alignment":0,"words":[{"id":"cltsv8hmm00032a69tef89k6x","local":"Hi","foreign":"Hola","phrase":""}]}]
 }
+
+### Get Book
+
+GET http://localhost:1954/api/book/cltsv8hml00002a69f01ejx03

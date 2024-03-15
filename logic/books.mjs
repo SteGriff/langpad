@@ -18,11 +18,13 @@ export const createOrUpdateBook = (db, cuid, name, ownerId, elementsJson) => {
   return getSuccess();
 };
 
-export const getBooks = (db, userId) => {
-  const model = getBooksForUser(db, userId);
+export const getBooks = (db, userId, metadataOnly = false) => {
+  const model = getBooksForUser(db, userId, metadataOnly);
   // TODO check success based on dbResult
   return getSuccess(model);
 };
+
+export const getBook = (db, cuid, userId) => getSuccess(getBookByCuid(db, cuid, userId));
 
 const getBookByCuid = (db, cuid, ownerId) => {
   console.log("getBookByCuid req", cuid, ownerId)
@@ -54,9 +56,18 @@ const updateBook = (db, cuid, name, ownerId, elementsJson) => {
   console.log("updateBook res", dbResult);
 };
 
+const getBooksForUser = (db, userId, metadataOnly) => {
+  let fieldList = "CUID, Name, OwnerId, Privacy";
+  if (!metadataOnly) fieldList += ", ElementsJson";
+
+  return db
+    .prepare(`select ${fieldList} from [Book] where OwnerId = ?`)
+    .all(userId);
+}
+
 // const upsertBook = (db, cuid, name, ownerId, elementsJson) => {
 //   const dbResult = db.prepare(
-//     `insert into [Book] (CUID, Name, OwnerId, ElementsJson) 
+//     `insert into [Book] (CUID, Name, OwnerId, ElementsJson)
 //     values (?, ?, ?, ?)
 //     on conflict(CUID) do update
 //       set ElementsJson = excluded.ElementsJson`
@@ -64,12 +75,6 @@ const updateBook = (db, cuid, name, ownerId, elementsJson) => {
 //     .run(cuid, name, ownerId, elementsJson);
 //   console.log("Upsert book", dbResult);
 // };
-
-const getBooksForUser = (db, userId) => {
-  return db
-    .prepare("select * from [Book] where OwnerId = ?")
-    .all(userId);
-}
 
 /*
 create table [Book]
