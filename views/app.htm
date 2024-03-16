@@ -40,7 +40,7 @@
       <p v-else class="b"><a class="pointer" @click="dialog = 'LOGIN'">🔑 Log in</a></p>
       <hr />
       <p class="b">{{ currentBook.name }}</p>
-      <p><a class="pointer" @click="dialog = 'BOOKS'">📚 Books</a></p>
+      <p><a class="pointer" @click="booksDialog()">📚 Books</a></p>
       <p><a class="pointer" @click="startNew()">✨ New Book</a></p>
       <hr />
       <p>📤 <a class="pointer" @click="dialog = 'EXPORT'">Export</a></p>
@@ -254,6 +254,7 @@
   <!-- Overlay background -->
   <div
     v-if="dialog"
+    @click="dialog=null"
     class="overlay z-2 bg-dark-gray o-70 fixed absolute--fill"
   ></div>
 
@@ -268,26 +269,26 @@
     </div>
     <div v-if="dialog === 'LOGIN'">
       <form @submit.prevent="login()">
-        <div>
-        <label>
-          Username:
-            <input name="username" type="text" placeholder="Username" 
-              v-model="username"
-              class="pa2 f4 mh1 mh2-ns w-40 minw4">
-        </label>
-      </div>
-      <div>
-        <label>
-          Password:
-            <input name="password" type="password" placeholder="Password" 
-              v-model="password"
-              class="pa2 f4 mh1 mh2-ns w-40 minw4">
-        </label>
-      </div>
-      <div class="mv2">
-        <p v-if="message" class="mv2">{{message}}</p>
-        <button type="submit" 
-          class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4 b">
+        <div class="pv1">
+          <label>
+            Username:
+              <input name="username" type="text" placeholder="Username" 
+                v-model="username"
+                class="pa2 f4 mh1 mh2-ns w-40 minw4">
+          </label>
+        </div>
+        <div class="pv1">
+          <label>
+            Password:
+              <input name="password" type="password" placeholder="Password" 
+                v-model="password"
+                class="pa2 f4 mh1 mh2-ns w-40 minw4">
+          </label>
+        </div>
+        <div class="mv2">
+          <p v-if="message" class="mv2">{{message}}</p>
+          <button type="submit" 
+            class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4 b">
             Log in
           </button>
           <button type="button" 
@@ -358,5 +359,19 @@
         v-model="importContent"
       ></textarea>
     </div>
+    <div v-if="dialog === 'BOOKS'" class="center measure">
+      <div 
+        v-for="book in books" 
+        class="ba br2 b--black pa3 pointer flex">
+        <span class="b">{{book.Name}}</span>
+        <span class="ml3">{{book.Updated}}</span>
+      </div>
+    </div>
   </div>
+
+  <!-- Toast -->
+  <div
+    v-if="message"
+    class="z-3 tc fixed bottom-1 left-1 right-1 ma1 pa2 black br4 bg-white"
+  >{{message}}</div>
 </div>

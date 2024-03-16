@@ -12,7 +12,6 @@ export const createOrUpdateBook = (db, cuid, name, ownerId, elementsJson) => {
   else
     insertBook(db, cuid, name, ownerId, elementsJsonString);
 
-  //const model = upsertBook(db, cuid, name, ownerId, elementsJson);
   // TODO check success based on dbResult
   // TODO set User.CurrentBook to book CUID
   return getSuccess();
@@ -37,8 +36,8 @@ const insertBook = (db, cuid, name, ownerId, elementsJson) => {
   console.log("insertBook req", cuid, name, ownerId, elementsJson);
   const dbResult = db.prepare(
     `insert into [Book] 
-    (CUID, Name, OwnerId, ElementsJson) 
-    values (?, ?, ?, ?)`
+    (CUID, Name, OwnerId, Updated, ElementsJson) 
+    values (?, ?, ?, unixepoch(), ?)`
   )
     .run(cuid, name, ownerId, elementsJson);
   console.log("insertBook res", dbResult);
@@ -48,8 +47,9 @@ const updateBook = (db, cuid, name, ownerId, elementsJson) => {
   console.log("updateBook req", cuid, name, ownerId, elementsJson);
   const dbResult = db.prepare(
     `update [Book] set 
-    Name = ?
-    ElementsJson = ?
+    Name = ?,
+    ElementsJson = ?,
+    Updated = unixepoch()
     where CUID = ? and OwnerId = ?`
   )
     .run(name, elementsJson, cuid, ownerId);
@@ -57,32 +57,10 @@ const updateBook = (db, cuid, name, ownerId, elementsJson) => {
 };
 
 const getBooksForUser = (db, userId, metadataOnly) => {
-  let fieldList = "CUID, Name, OwnerId, Privacy";
+  let fieldList = "CUID, Name, Updated, OwnerId, Privacy";
   if (!metadataOnly) fieldList += ", ElementsJson";
 
   return db
     .prepare(`select ${fieldList} from [Book] where OwnerId = ?`)
     .all(userId);
 }
-
-// const upsertBook = (db, cuid, name, ownerId, elementsJson) => {
-//   const dbResult = db.prepare(
-//     `insert into [Book] (CUID, Name, OwnerId, ElementsJson)
-//     values (?, ?, ?, ?)
-//     on conflict(CUID) do update
-//       set ElementsJson = excluded.ElementsJson`
-//   )
-//     .run(cuid, name, ownerId, elementsJson);
-//   console.log("Upsert book", dbResult);
-// };
-
-/*
-create table [Book]
-(
-  [CUID] nvarchar(25) primary key,
-  [Name] text,
-  [OwnerId] integer not null,
-  [Privacy] integer not null default 0,
-  [ElementsJson] text null
-);
-*/

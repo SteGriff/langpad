@@ -15,6 +15,7 @@ const storageLoad = (key) => {
 const newBook = () => {
   return {
     name: nameFactory.nameForA("book"),
+    cuid: cuid(),
     elements: elementFactory.initElements()
   };
 };
@@ -23,8 +24,8 @@ PetiteVue.createApp({
   dialog: null,
   menu: false,
   copied: null,
+  books: [],
   currentBook: newBook(),
-  //elements: elementFactory.initElements(),
   selected: null,
   selectedWord: null,
   addPoint: 0,
@@ -38,6 +39,13 @@ PetiteVue.createApp({
   password: '',
   async mounted() {
     console.log("mounted");
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        if (this.dialog) this.dialog = null;
+        else if (this.menu) this.menu = false;
+      }
+    });
+
     // Check session
     await this.checkSession();
 
@@ -163,10 +171,16 @@ PetiteVue.createApp({
     this.save();
   },
   save() {
-    console.log("Save");
+    if (!this.currentBook.cuid)
+      this.currentBook.cuid = cuid();
+
+    console.log("Save", this.currentBook.cuid);
+
     // Save to LS
     const json = JSON.stringify(this.currentBook);
     window.localStorage.setItem(CONTENT, json);
+    // Save to Server
+    this.postBook();
   },
   copy(content, label) {
     try {
@@ -199,6 +213,11 @@ PetiteVue.createApp({
     this.importing = false;
     this.importContent = "";
   },
+  toast(msg) {
+    this.message = msg;
+    window.setTimeout(this.untoast, 2000);
+  },
+  untoast() { this.message = null; },
   async login() {
     const data = { "username": this.username, "password": this.password };
     const response = await fetch("/api/login/", {
@@ -212,6 +231,9 @@ PetiteVue.createApp({
     console.log(json);
     if (json.status === "OK") {
       this.setUser(json.model);
+      this.username = '';
+      this.password = '';
+      this.message = null;
     }
     else {
       this.message = json.message;
@@ -226,15 +248,49 @@ PetiteVue.createApp({
     // Clear all books/data?
   },
   setUser(model) {
+    console.log("setUser", model);
     this.userModel = model;
     this.dialog = null;
-    // TODO Load books/data...
+    this.getBooksList();
+    // TODO Load current book, books list?
   },
   async checkSession() {
-    const response = await fetch("/api/user/");
+    const response = await fetch("/api/user");
     const json = await response.json();
     if (json.status === "OK") {
       this.setUser(json.model);
+    }
+  },
+  booksDialog() {
+    this.dialog = "BOOKS";
+    this.getBooksList();
+  },
+  async getBooksList() {
+    const response = await fetch("/api/books");
+    const json = await response.json();
+    console.log("got books", json);
+    if (json.status === "OK") {
+      this.books = json.model;
+    }
+  },
+  async postBook() {
+    const data = this.currentBook;
+    const url = "/api/book/" + data.cuid;
+    console.log("postBook", url);
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(data)
+    });
+    const json = await response.json();
+    console.log(json);
+    if (json.status === "OK") {
+      // Profit???
+    }
+    else {
+      this.message = json.message;
     }
   }
 }).mount();

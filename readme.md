@@ -28,11 +28,12 @@ Jumping back in:
 
 Docs:
 
- + https://www.npmjs.com/package/better-sqlite3
+ + <https://www.npmjs.com/package/better-sqlite3>
      - `.run` is fire and forget (returns row id)
      - `.get` gets 1 row as object
      - `.all` returns array of row objects
- + https://github.com/Huachao/vscode-restclient
+     - <https://github.com/WiseLibs/better-sqlite3/blob/HEAD/docs/api.md>
+ + <https://github.com/Huachao/vscode-restclient>
 
 ## Tech
 
