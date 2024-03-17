@@ -57,8 +57,8 @@ const updateBook = (db, cuid, name, ownerId, elementsJson) => {
 };
 
 const getBooksForUser = (db, userId, metadataOnly) => {
-  let fieldList = "CUID, Name, Updated, OwnerId, Privacy";
-  if (!metadataOnly) fieldList += ", ElementsJson";
+  let fieldList = "cuid, name, updated, ownerId, privacy";
+  if (!metadataOnly) fieldList += ", ElementsJson as elements";
 
   return db
     .prepare(`select ${fieldList} from [Book] where OwnerId = ?`)

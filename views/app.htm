@@ -39,7 +39,11 @@
       <p v-if="userModel" class="b">{{userModel.Username}}</p>
       <p v-else class="b"><a class="pointer" @click="dialog = 'LOGIN'">🔑 Log in</a></p>
       <hr />
-      <p class="b">{{ currentBook.name }}</p>
+      <p class="b">
+        <a class="pointer" @click="dialog = 'RENAME'">
+          {{ currentBook.name }} 🖍
+        </a>
+      </p>
       <p><a class="pointer" @click="booksDialog()">📚 Books</a></p>
       <p><a class="pointer" @click="startNew()">✨ New Book</a></p>
       <hr />
@@ -363,8 +367,31 @@
       <div 
         v-for="book in books" 
         class="ba br2 b--black pa3 pointer flex">
-        <span class="b">{{book.Name}}</span>
-        <span class="ml3">{{book.Updated}}</span>
+        <span class="b">{{book.name}}</span>
+        <span class="ml3">{{book.updated}}</span>
+      </div>
+    </div>
+    <div v-if="dialog === 'RENAME'">
+      <div class="pv1">
+        <form @submit.prevent="save()">
+          <label>
+            Book name:
+            <input name="name" type="text" placeholder="Book name" 
+            v-model="currentBook.name"
+            class="pa2 f4 mh1 mh2-ns w-40 minw4">
+          </label>
+          <div class="mv2">
+            <button type="submit" 
+              class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4 b">
+              Save
+            </button>
+            <button type="button" 
+              class="pointer pa1 ma1 b--black bw1 br2 bg-white black minw4"
+              @click="dialog = null">
+              Cancel
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   </div>
