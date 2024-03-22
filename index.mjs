@@ -145,13 +145,13 @@ app.post("/api/logout", async (req, res) => {
 
 // Books
 app.get("/api/books", auth, async (req, res) => {
-  const userId = req.session.user.ID;
+  const userId = req.session.user.id;
   return res.json(getBooks(db, userId, true));
 });
 
 app.get("/api/book/:cuid", auth, async (req, res) => {
   const bookCuid = req.params.cuid;
-  const userId = req.session.user.ID;
+  const userId = req.session.user.id;
   console.log("GET book", bookCuid)
   const result = getBook(
     db,
@@ -163,7 +163,7 @@ app.get("/api/book/:cuid", auth, async (req, res) => {
 
 app.post("/api/book/:cuid", auth, async (req, res) => {
   const bookCuid = req.params.cuid;
-  const userId = req.session.user.ID;
+  const userId = req.session.user.id;
   console.log("POST book", bookCuid)
   const result = createOrUpdateBook(
     db,

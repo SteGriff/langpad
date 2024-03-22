@@ -1,25 +1,28 @@
 import { getSuccess } from "../results.mjs";
+import { EVT_BOOK_CREATE, EVT_BOOK_UPDATE, writeLog } from "./logging.mjs";
 
 export const createOrUpdateBook = (db, cuid, name, ownerId, elementsJson) => {
-  console.log("createOrUpdateBook req", cuid, name)
+  //console.log("createOrUpdateBook req", cuid, name)
   const existingBook = getBookByCuid(db, cuid, ownerId);
-  console.log("existingBook", existingBook);
 
   const elementsJsonString = JSON.stringify(elementsJson);
 
-  if (existingBook)
+  if (existingBook) {
     updateBook(db, cuid, name, ownerId, elementsJsonString);
-  else
+    writeLog(db, EVT_BOOK_UPDATE, cuid, name);
+  }
+  else {
     insertBook(db, cuid, name, ownerId, elementsJsonString);
+    writeLog(db, EVT_BOOK_CREATE, cuid, name);
+  }
 
-  // TODO check success based on dbResult
-  // TODO set User.CurrentBook to book CUID
+  setUserBook(db, ownerId, cuid);
   return getSuccess();
 };
 
 export const getBooks = (db, userId, metadataOnly = false) => {
   const model = getBooksForUser(db, userId, metadataOnly);
-  // TODO check success based on dbResult
+  console.log("getBooks", model);
   return getSuccess(model);
 };
 
@@ -28,39 +31,47 @@ export const getBook = (db, cuid, userId) => getSuccess(getBookByCuid(db, cuid, 
 const getBookByCuid = (db, cuid, ownerId) => {
   console.log("getBookByCuid req", cuid, ownerId)
   return db
-    .prepare("select * from [Book] where CUID = ? and OwnerId = ?")
+    .prepare("select * from [Book] where cuid = ? and OwnerId = ?")
     .get(cuid, ownerId);
 }
 
 const insertBook = (db, cuid, name, ownerId, elementsJson) => {
-  console.log("insertBook req", cuid, name, ownerId, elementsJson);
   const dbResult = db.prepare(
     `insert into [Book] 
-    (CUID, Name, OwnerId, Updated, ElementsJson) 
+    (cuid, name, ownerId, updated, elementsJson) 
     values (?, ?, ?, unixepoch(), ?)`
   )
     .run(cuid, name, ownerId, elementsJson);
-  console.log("insertBook res", dbResult);
+  return dbResult.changes > 0;
 };
 
 const updateBook = (db, cuid, name, ownerId, elementsJson) => {
-  console.log("updateBook req", cuid, name, ownerId, elementsJson);
   const dbResult = db.prepare(
     `update [Book] set 
-    Name = ?,
-    ElementsJson = ?,
-    Updated = unixepoch()
-    where CUID = ? and OwnerId = ?`
+    name = ?,
+    elementsJson = ?,
+    updated = unixepoch()
+    where cuid = ? and ownerId = ?`
   )
     .run(name, elementsJson, cuid, ownerId);
-  console.log("updateBook res", dbResult);
+  return dbResult.changes > 0;
 };
 
 const getBooksForUser = (db, userId, metadataOnly) => {
   let fieldList = "cuid, name, updated, ownerId, privacy";
-  if (!metadataOnly) fieldList += ", ElementsJson as elements";
+  if (!metadataOnly) fieldList += ", elementsJson as elements";
 
   return db
     .prepare(`select ${fieldList} from [Book] where OwnerId = ?`)
     .all(userId);
 }
+
+const setUserBook = (db, userId, cuid) => {
+  const dbResult = db.prepare(
+    `update [User] set 
+    currentBook = ?,
+    id = ?`
+  )
+    .run(cuid, userId);
+  return dbResult.changes > 0;
+};

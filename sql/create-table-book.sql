@@ -2,10 +2,10 @@ drop table if exists [Book];
 
 create table [Book]
 (
-  [CUID] nvarchar(25) primary key,
-  [Name] text,
-  [OwnerId] int not null,
-  [Privacy] int not null default 0,
-  [Updated] int,  -- unixepoch
-  [ElementsJson] text null
+  [cuid] nvarchar(25) primary key,
+  [name] text,
+  [ownerId] int not null,
+  [privacy] int not null default 0,
+  [updated] int,  -- unixepoch
+  [elementsJson] text null
 );

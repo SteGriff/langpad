@@ -19,16 +19,16 @@ const getUser = (db, username) => {
 
 const maskUser = (user) => {
   return {
-    ID: user.ID,
-    Username: user.Username,
-    Email: user.Email,
-    CurrentBook: user.CurrentBook
+    id: user.id,
+    username: user.username,
+    email: user.email,
+    currentBook: user.currentBook
   };
 };
 
 // Middleware
 export const auth = (req, res, next) => {
-  if (req.session.user && req.session.user.ID) next();
+  if (req.session.user && req.session.user.id) next();
   else res.status(401).send(getError());
 };
 
@@ -51,16 +51,16 @@ export const authenticateUser = async (db, username, password) => {
   // Check passwords match
   const hashedInput = await pbkdf(
     password,
-    user.Salt,
+    user.salt,
     ITERATIONS,
     BITLENGTH,
     ALGO
   );
-  const isMatch = comparePasswords(user.Password, hashedInput);
+  const isMatch = comparePasswords(user.password, hashedInput);
 
   if (!isMatch) return getError(GENERIC_ERROR);
 
-  writeLog(db, EVT_LOGIN, user.Username, null);
+  writeLog(db, EVT_LOGIN, user.username, null);
   return getSuccess(maskUser(user));
 };
 
@@ -80,6 +80,7 @@ export const createUser = async (db, userModel) => {
 
   // No such user, let's create
   const salt = crypto.randomBytes(128).toString("base64");
+  console.log("Create", userModel, salt);
   const hashedPassword = await pbkdf(
     userModel.password,
     salt,
