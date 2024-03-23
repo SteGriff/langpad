@@ -175,18 +175,20 @@ PetiteVue.createApp({
       this.currentBook.cuid = cuid();
 
     console.log("Save", this.currentBook.cuid);
-
-    // Save to LS
+    // Save to LS and server
     const json = JSON.stringify(this.currentBook);
     window.localStorage.setItem(CONTENT, json);
-    // Save to Server
     this.postBook();
+  },
+  saveName() {
+    this.save();
+    this.dialog = null;
   },
   copy(content, label) {
     try {
       navigator.clipboard.writeText(content);
       this.copied = label;
-      window.setTimeout(() => (this.copied = null), 1000);
+      window.setTimeout(() => (this.copied = null), 3000);
     } catch (e) {
       this.pasteFailContent = content;
       this.copied = false;
@@ -215,7 +217,7 @@ PetiteVue.createApp({
   },
   toast(msg) {
     this.message = msg;
-    window.setTimeout(this.untoast, 2000);
+    window.setTimeout(this.untoast, 3000);
   },
   untoast() { this.message = null; },
   async login() {
@@ -228,7 +230,6 @@ PetiteVue.createApp({
       body: JSON.stringify(data)
     });
     const json = await response.json();
-    console.log(json);
     if (json.status === "OK") {
       this.setUser(json.model);
       this.username = '';
@@ -250,15 +251,27 @@ PetiteVue.createApp({
   setUser(model) {
     console.log("setUser", model);
     this.userModel = model;
-    this.dialog = null;
-    this.getBooksList();
-    // TODO Load current book, books list?
+    if (model) {
+      this.dialog = null;
+      this.getBooksList();
+      // TODO Load current book
+    }
+    else
+      this.toast("Log in to sync data");
   },
   async checkSession() {
-    const response = await fetch("/api/user");
-    const json = await response.json();
-    if (json.status === "OK") {
-      this.setUser(json.model);
+    try {
+      const response = await fetch("/api/user");
+      if (response.status === 401) {
+        this.setUser(null);
+        return;
+      }
+      const json = await response.json();
+      if (json.status === "OK") {
+        this.setUser(json.model);
+      }
+    } catch (error) {
+      console.log("Catch checkSession", error);
     }
   },
   booksDialog() {
@@ -267,8 +280,12 @@ PetiteVue.createApp({
   },
   async getBooksList() {
     const response = await fetch("/api/books");
+    if (response.status === 401) {
+      this.setUser(null);
+      return;
+    }
     const json = await response.json();
-    console.log("got books", json);
+    console.log("getBooksList", json);
     if (json.status === "OK") {
       this.books = json.model;
     }
@@ -284,13 +301,24 @@ PetiteVue.createApp({
       },
       body: JSON.stringify(data)
     });
+    if (response.status === 401) {
+      this.setUser(null);
+      return;
+    }
     const json = await response.json();
-    console.log(json);
-    if (json.status === "OK") {
-      // Profit???
-    }
-    else {
+    if (json.status !== "OK")
       this.message = json.message;
+  },
+  async startNew() {
+    this.save();
+    if (!this.userModel) {
+      this.dialog = "LOGIN";
+      console.log("Stop!")
+      return;
     }
+    console.log("Clear!");
+    const lastBookName = this.currentBook.name;
+    this.currentBook = newBook();
+    this.toast(`Saved ${lastBookName} and created ${this.currentBook.name} ✨`);
   }
 }).mount();

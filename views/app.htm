@@ -366,14 +366,14 @@
     <div v-if="dialog === 'BOOKS'" class="center measure">
       <div 
         v-for="book in books" 
-        class="ba br2 b--black pa3 pointer flex">
+        class="ba br2 b--black pa3 pointer flex justify-between">
         <span class="b">{{book.name}}</span>
         <span class="ml3">{{book.updated}}</span>
       </div>
     </div>
     <div v-if="dialog === 'RENAME'">
       <div class="pv1">
-        <form @submit.prevent="save()">
+        <form @submit.prevent="saveName()">
           <label>
             Book name:
             <input name="name" type="text" placeholder="Book name" 
@@ -399,6 +399,6 @@
   <!-- Toast -->
   <div
     v-if="message"
-    class="z-3 tc fixed bottom-1 left-1 right-1 ma1 pa2 black br4 bg-white"
-  >{{message}}</div>
+    class="z-3 tc b fixed bottom-1 left-1 right-1 ma1 pa2 black br4 bg-white shadow-5"
+  >{{ message }}</div>
 </div>
