@@ -19,6 +19,31 @@ const newBook = () => {
     elements: elementFactory.initElements()
   };
 };
+const timeSince = (uts) => {
+  const now = new Date() / 1000;
+  const seconds = Math.floor(now - uts);
+  let interval = seconds / 31536000;
+  if (interval > 1)
+    return Math.floor(interval) + " years";
+
+  interval = seconds / 2592000;
+  if (interval > 1)
+    return Math.floor(interval) + " months";
+
+  interval = seconds / 86400;
+  if (interval > 1)
+    return Math.floor(interval) + " days";
+
+  interval = seconds / 3600;
+  if (interval > 1)
+    return Math.floor(interval) + " hours";
+
+  interval = seconds / 60;
+  if (interval > 1)
+    return Math.floor(interval) + " minutes";
+
+  return Math.floor(seconds) + " seconds";
+}
 PetiteVue.createApp({
   message: null,
   dialog: null,
@@ -313,12 +338,18 @@ PetiteVue.createApp({
     this.save();
     if (!this.userModel) {
       this.dialog = "LOGIN";
-      console.log("Stop!")
       return;
     }
-    console.log("Clear!");
     const lastBookName = this.currentBook.name;
     this.currentBook = newBook();
     this.toast(`Saved ${lastBookName} and created ${this.currentBook.name} ✨`);
+  },
+  async loadBook() {
+    this.save();
+    if (!this.userModel) {
+      this.dialog = "LOGIN";
+      return;
+    }
+
   }
 }).mount();

@@ -366,9 +366,10 @@
     <div v-if="dialog === 'BOOKS'" class="center measure">
       <div 
         v-for="book in books" 
-        class="ba br2 b--black pa3 pointer flex justify-between">
+        @click="loadBook(book)"
+        class="mv2 ba br2 b--black pa3 pointer flex justify-between">
         <span class="b">{{book.name}}</span>
-        <span class="ml3">{{book.updated}}</span>
+        <span class="ml3">{{timeSince(book.updated)}} ago</span>
       </div>
     </div>
     <div v-if="dialog === 'RENAME'">
